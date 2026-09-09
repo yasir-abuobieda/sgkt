@@ -7,22 +7,44 @@ import { cookies } from 'next/headers';
 
 const cairo = Cairo({ subsets: ["arabic", "latin"] });
 
+const SITE_URL = 'https://sgk.com.tr';
+const SITE_NAME = 'مجلس الشباب السوداني بتركيا | Sudan Gençlik Konseyi';
+const SITE_DESC = 'المنصة الرسمية لمجلس الشباب السوداني بتركيا - Sudan Gençlik Konseyi (SGK). هيئة شبابية وطنية مستقلة تمثل الإطار الجامع للشباب السوداني في تركيا.';
+const OG_IMAGE = `${SITE_URL}/og-image.jpg`;
+
 export const metadata: Metadata = {
-  title: "مجلس الشباب السوداني | Sudan Gençlik Konseyi",
-  description: "المنصة الرسمية لمجلس الشباب السوداني. مؤسسة شبابية رائدة تهدف إلى جمع الكفاءات والطاقات السودانية الشابة لتعزيز التواصل وتقديم مبادرات تخدم المجتمع.",
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: SITE_NAME,
+    template: `%s | مجلس الشباب السوداني`,
+  },
+  description: SITE_DESC,
+  keywords: ['مجلس الشباب السوداني', 'Sudan Gençlik Konseyi', 'SGK', 'الشباب السوداني تركيا', 'Sudanese Youth Turkey', 'طلاب سودانيون في تركيا'],
+  authors: [{ name: 'مجلس الشباب السوداني' }],
+  creator: 'مجلس الشباب السوداني',
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: { index: true, follow: true },
+  },
   openGraph: {
-    title: "مجلس الشباب السوداني",
-    description: "المنصة الرسمية لمجلس الشباب السوداني. مؤسسة شبابية رائدة تهدف إلى جمع الكفاءات والطاقات السودانية الشابة لتعزيز التواصل وتقديم مبادرات تخدم المجتمع.",
-    type: "website",
-    locale: "ar_AR",
-    siteName: "مجلس الشباب السوداني",
+    title: SITE_NAME,
+    description: SITE_DESC,
+    url: SITE_URL,
+    type: 'website',
+    locale: 'ar_AR',
+    siteName: 'مجلس الشباب السوداني',
+    images: [{ url: OG_IMAGE, width: 1200, height: 630, alt: SITE_NAME }],
   },
   twitter: {
-    card: "summary_large_image",
-    title: "مجلس الشباب السوداني",
-    description: "المنصة الرسمية لمجلس الشباب السوداني. مؤسسة شبابية رائدة لجمع الكفاءات وبناء مجتمع شبابي مترابط.",
-  }
+    card: 'summary_large_image',
+    title: SITE_NAME,
+    description: SITE_DESC,
+    images: [OG_IMAGE],
+  },
 };
+
+import { GoogleTranslate } from "@/components/google-translate";
 
 export default function RootLayout({
   children,
@@ -35,22 +57,10 @@ export default function RootLayout({
   const dir = isLtr ? 'ltr' : 'rtl';
   const lang = googtrans?.includes('/en') ? 'en' : googtrans?.includes('/tr') ? 'tr' : 'ar';
 
-  const isTranslating = isLtr;
-
   return (
     <html lang={lang} dir={dir} suppressHydrationWarning>
-      <head>
-        <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit" async></script>
-        <script dangerouslySetInnerHTML={{
-          __html: `
-            function googleTranslateElementInit() {
-              new google.translate.TranslateElement({pageLanguage: 'ar', autoDisplay: false}, 'google_translate_element');
-            }
-          `
-        }} />
-      </head>
-      <body className={`${cairo.className} bg-slate-50 text-slate-800 ${isTranslating ? 'animate-translation-fade' : ''}`} suppressHydrationWarning>
-        <div id="google_translate_element" style={{ display: 'none' }}></div>
+      <body className={`${cairo.className} bg-slate-50 text-slate-800`} suppressHydrationWarning>
+        <GoogleTranslate />
         <ClientLayout>
           {children}
         </ClientLayout>

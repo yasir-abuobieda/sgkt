@@ -8,16 +8,32 @@ import logoSgk from '@/logo-sgk.png';
 export default function AdminLogin() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (password === 'admin.sgk/tr') {
-      document.cookie = "admin_token=secure_sgk_token_2026; path=/; max-age=86400";
-      router.push('/admin');
-      router.refresh();
-    } else {
-      setError('كلمة المرور غير صحيحة');
+    setIsLoading(true);
+    setError('');
+
+    try {
+      const res = await fetch('/api/admin/auth', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password }),
+      });
+
+      if (res.ok) {
+        window.location.href = '/admin';
+      } else if (res.status === 429) {
+        setError('محاولات كثيرة جداً. حاول مرة أخرى بعد 15 دقيقة.');
+      } else {
+        setError('كلمة المرور غير صحيحة');
+      }
+    } catch {
+      setError('حدث خطأ في الاتصال. حاول مرة أخرى.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -44,9 +60,10 @@ export default function AdminLogin() {
           {error && <p className="text-red-500 text-sm font-bold">{error}</p>}
           <button 
             type="submit"
-            className="w-full bg-brand-maroon text-white font-bold py-3.5 rounded-xl hover:bg-brand-maroon/90 transition shadow-md"
+            disabled={isLoading}
+            className="w-full bg-brand-maroon text-white font-bold py-3.5 rounded-xl hover:bg-brand-maroon/90 disabled:opacity-70 transition shadow-md"
           >
-            دخول آمن
+            {isLoading ? 'جاري التحقق...' : 'دخول آمن'}
           </button>
         </form>
       </div>

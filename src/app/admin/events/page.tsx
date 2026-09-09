@@ -10,13 +10,18 @@ export default function AdminEvents() {
   // Modal states
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isRegistrationsModalOpen, setIsRegistrationsModalOpen] = useState(false);
   const [currentEvent, setCurrentEvent] = useState<any>(null);
   
-  // Form states
+  const [registrationCounts, setRegistrationCounts] = useState<Record<string, number>>({});
+  const [eventRegistrations, setEventRegistrations] = useState<any[]>([]);
+  const [isRegistrationsLoading, setIsRegistrationsLoading] = useState(false);
+  
   const [formData, setFormData] = useState({
     title: '',
     location: '',
     date: '',
+    time: '',
     status: 'upcoming',
     image: '',
     description: ''
@@ -33,6 +38,19 @@ export default function AdminEvents() {
     if (!error && data) {
       setEvents(data);
     }
+    
+    // Fetch registration counts
+    const { data: regData } = await supabase.from('registrations').select('event_id');
+    if (regData) {
+      const counts: Record<string, number> = {};
+      regData.forEach(reg => {
+        if (reg.event_id) {
+          counts[reg.event_id] = (counts[reg.event_id] || 0) + 1;
+        }
+      });
+      setRegistrationCounts(counts);
+    }
+    
     setIsLoading(false);
   };
 
@@ -45,11 +63,23 @@ export default function AdminEvents() {
   // Handle open Add/Edit modal
   const openModal = (event: any = null) => {
     if (event) {
+      let dateVal = event.date || '';
+      let timeVal = event.time || '';
+      if (dateVal.includes(' | ')) {
+        const parts = dateVal.split(' | ');
+        dateVal = parts[0];
+        timeVal = parts[1];
+      }
       setCurrentEvent(event);
-      setFormData(event);
+      setFormData({
+        ...event,
+        date: dateVal,
+        time: timeVal
+      });
     } else {
       setCurrentEvent(null);
-      setFormData({ title: '', location: '', date: '', status: 'upcoming', image: '', description: '' });
+      const today = new Date().toISOString().split('T')[0];
+      setFormData({ title: '', location: '', date: today, time: '', status: 'upcoming', image: '', description: '' });
     }
     setIsModalOpen(true);
   };
@@ -79,16 +109,35 @@ export default function AdminEvents() {
   // Handle save (Add/Edit)
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Create a payload and remove the 'time' property
+    const payload: any = { ...formData };
+    delete payload.time;
+    
+    // Merge time into date string if time is provided
+    if (formData.time) {
+      payload.date = `${formData.date} | ${formData.time}`;
+    }
+
     if (currentEvent) {
       // Edit in Supabase
-      const { error } = await supabase.from('events').update(formData).eq('id', currentEvent.id);
-      if (!error) fetchEvents();
+      const { error } = await supabase.from('events').update(payload).eq('id', currentEvent.id);
+      if (error) {
+        alert('خطأ في التعديل: ' + error.message);
+      } else {
+        fetchEvents();
+        setIsModalOpen(false);
+      }
     } else {
       // Add to Supabase
-      const { error } = await supabase.from('events').insert([formData]);
-      if (!error) fetchEvents();
+      const { error } = await supabase.from('events').insert([payload]);
+      if (error) {
+        alert('خطأ في الإضافة: ' + error.message);
+      } else {
+        fetchEvents();
+        setIsModalOpen(false);
+      }
     }
-    setIsModalOpen(false);
   };
 
   // Handle delete
@@ -103,6 +152,46 @@ export default function AdminEvents() {
       fetchEvents();
     }
     setIsDeleteModalOpen(false);
+  };
+
+  // View Registrations
+  const viewRegistrations = async (event: any) => {
+    setCurrentEvent(event);
+    setIsRegistrationsModalOpen(true);
+    setIsRegistrationsLoading(true);
+    
+    const { data } = await supabase
+      .from('registrations')
+      .select('*')
+      .eq('event_id', event.id)
+      .order('created_at', { ascending: false });
+      
+    setEventRegistrations(data || []);
+    setIsRegistrationsLoading(false);
+  };
+
+  // Export registrations to CSV
+  const exportToCSV = () => {
+    if (eventRegistrations.length === 0) return;
+    
+    const headers = ['الاسم', 'رقم الهاتف', 'المدينة', 'ملاحظات', 'تاريخ التسجيل'];
+    
+    const rows = eventRegistrations.map(reg => [
+      `"${(reg.name || '').replace(/"/g, '""')}"`,
+      `"${(reg.phone || '').replace(/"/g, '""')}"`,
+      `"${(reg.university || '').replace(/"/g, '""')}"`,
+      `"${(reg.specialty || '').replace(/"/g, '""')}"`,
+      `"${new Date(reg.created_at).toLocaleDateString('en-GB')}"`
+    ]);
+    
+    const csvContent = '\uFEFF' + [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `مسجلي_${currentEvent?.title || 'event'}_${new Date().toLocaleDateString('en-GB').replace(/\//g, '-')}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
   };
 
   return (
@@ -148,13 +237,22 @@ export default function AdminEvents() {
             <tr>
               <th className="p-4">صورة الفعالية</th>
               <th className="p-4">عنوان الفعالية</th>
-              <th className="p-4">المكان</th>
+              <th className="p-4 text-center">المسجلين</th>
               <th className="p-4">الحالة</th>
               <th className="p-4 text-center">الإجراءات</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
-            {filteredEvents.map((event) => (
+            {isLoading ? (
+              <tr>
+                <td colSpan={5} className="p-8 text-center text-slate-500">
+                  <div className="flex items-center justify-center gap-2">
+                    <svg className="animate-spin h-5 w-5 text-brand-maroon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                    <span>جاري التحميل...</span>
+                  </div>
+                </td>
+              </tr>
+            ) : filteredEvents.map((event) => (
               <tr key={event.id} className="hover:bg-slate-50 transition-colors">
                 <td className="p-4">
                   <div className="w-16 h-12 rounded bg-slate-200 overflow-hidden">
@@ -162,7 +260,15 @@ export default function AdminEvents() {
                   </div>
                 </td>
                 <td className="p-4 font-medium text-slate-800">{event.title}</td>
-                <td className="p-4 text-slate-500 text-sm">{event.location}</td>
+                <td className="p-4 text-center">
+                  <button 
+                    onClick={() => viewRegistrations(event)}
+                    className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-lg text-sm font-bold transition-colors"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+                    {registrationCounts[event.id] || 0}
+                  </button>
+                </td>
                 <td className="p-4">
                   <span className={`text-xs px-3 py-1 rounded-full font-bold ${event.status === 'upcoming' ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-600'}`}>
                     {event.status === 'upcoming' ? 'قريباً' : 'منتهية'}
@@ -170,7 +276,7 @@ export default function AdminEvents() {
                 </td>
                 <td className="p-4">
                   <div className="flex items-center justify-center gap-2">
-                    <button onClick={() => openModal(event)} className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="تعديل">
+                    <button onClick={() => openModal(event)} className="p-2 text-slate-500 hover:bg-slate-100 hover:text-slate-800 rounded-lg transition-colors" title="تعديل">
                       <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
                     </button>
                     <button onClick={() => confirmDelete(event)} className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="حذف">
@@ -180,7 +286,7 @@ export default function AdminEvents() {
                 </td>
               </tr>
             ))}
-            {filteredEvents.length === 0 && (
+            {!isLoading && filteredEvents.length === 0 && (
               <tr>
                 <td colSpan={5} className="p-8 text-center text-slate-500">لا توجد فعاليات في هذا القسم.</td>
               </tr>
@@ -204,14 +310,18 @@ export default function AdminEvents() {
                 <label className="block text-sm font-bold text-slate-700 mb-1">عنوان الفعالية</label>
                 <input required type="text" className="w-full px-4 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-brand-maroon focus:outline-none" value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} />
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                   <label className="block text-sm font-bold text-slate-700 mb-1">المكان</label>
                   <input required type="text" className="w-full px-4 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-brand-maroon focus:outline-none" value={formData.location} onChange={e => setFormData({...formData, location: e.target.value})} />
                 </div>
                 <div>
                   <label className="block text-sm font-bold text-slate-700 mb-1">التاريخ</label>
-                  <input required type="date" className="w-full px-4 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-brand-maroon focus:outline-none" value={formData.date} onChange={e => setFormData({...formData, date: e.target.value})} />
+                  <input required type="date" className="w-full px-4 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-brand-maroon focus:outline-none text-right" value={formData.date} onChange={e => setFormData({...formData, date: e.target.value})} />
+                </div>
+                <div>
+                  <label className="block text-sm font-bold text-slate-700 mb-1">الساعة</label>
+                  <input required type="time" className="w-full px-4 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-brand-maroon focus:outline-none text-right" value={formData.time} onChange={e => setFormData({...formData, time: e.target.value})} />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
@@ -227,7 +337,7 @@ export default function AdminEvents() {
                   <div className="flex gap-2">
                     <input type="url" dir="ltr" placeholder="رابط URL" className="flex-1 px-4 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-brand-maroon focus:outline-none text-right" value={formData.image} onChange={e => setFormData({...formData, image: e.target.value})} />
                     <label className={`px-4 py-2 rounded-lg font-bold cursor-pointer transition-colors whitespace-nowrap flex items-center justify-center border ${isUploading ? 'bg-slate-200 text-slate-400 border-slate-200' : 'bg-slate-100 hover:bg-slate-200 text-slate-600 border-slate-200'}`}>
-                      {isUploading ? 'جاري الرفع...' : 'رفع محلي'}
+                      {isUploading ? 'جاري الرفع...' : 'رفع من الجهاز'}
                       <input type="file" accept="image/*" className="hidden" disabled={isUploading} onChange={handleImageUpload} />
                     </label>
                   </div>
@@ -258,6 +368,86 @@ export default function AdminEvents() {
             <div className="flex justify-center gap-3">
               <button onClick={() => setIsDeleteModalOpen(false)} className="px-6 py-2 rounded-lg font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors">إلغاء</button>
               <button onClick={handleDelete} className="px-6 py-2 rounded-lg font-bold text-white bg-red-600 hover:bg-red-700 transition-colors">نعم، احذف</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Registrations Modal */}
+      {isRegistrationsModalOpen && (
+        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden">
+            <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+              <div>
+                <h3 className="text-xl font-bold text-slate-800">قائمة المسجلين</h3>
+                <p className="text-sm text-slate-500 mt-1">{currentEvent?.title}</p>
+              </div>
+              <button onClick={() => setIsRegistrationsModalOpen(false)} className="text-slate-400 hover:text-slate-600">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+              </button>
+            </div>
+            
+            <div className="flex-1 overflow-auto p-0">
+              <table className="w-full text-right text-sm">
+                <thead className="bg-slate-100 border-b border-slate-200 text-slate-600 font-bold sticky top-0">
+                  <tr>
+                    <th className="p-4">الاسم</th>
+                    <th className="p-4">الهاتف</th>
+                    <th className="p-4">المدينة</th>
+                    <th className="p-4">ملاحظات</th>
+                    <th className="p-4">تاريخ التسجيل</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {isRegistrationsLoading ? (
+                    <tr>
+                      <td colSpan={5} className="p-8 text-center text-slate-500">
+                        جاري التحميل...
+                      </td>
+                    </tr>
+                  ) : eventRegistrations.length === 0 ? (
+                    <tr>
+                      <td colSpan={5} className="p-8 text-center text-slate-500 font-medium">
+                        لم يقم أحد بالتسجيل في هذه الفعالية بعد.
+                      </td>
+                    </tr>
+                  ) : (
+                    eventRegistrations.map((reg) => (
+                      <tr key={reg.id} className="hover:bg-slate-50 transition-colors">
+                        <td className="p-4 font-bold text-slate-800">{reg.name}</td>
+                        <td className="p-4 text-slate-600" dir="ltr">{reg.phone}</td>
+                        <td className="p-4 text-slate-600">{reg.university || '-'}</td>
+                        <td className="p-4 text-slate-500 max-w-[200px] truncate" title={reg.specialty || ''}>{reg.specialty || '-'}</td>
+                        <td className="p-4 text-slate-500" dir="ltr">
+                          {new Date(reg.created_at).toLocaleDateString('en-GB')}
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+            
+            <div className="p-4 border-t border-slate-100 bg-slate-50 flex justify-between items-center">
+              <span className="text-slate-600 font-bold">الإجمالي: {eventRegistrations.length}</span>
+              <div className="flex gap-2">
+                <button 
+                  onClick={exportToCSV}
+                  disabled={eventRegistrations.length === 0}
+                  className="px-5 py-2 rounded-lg font-bold text-white bg-green-600 hover:bg-green-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  تصدير CSV
+                </button>
+                <button 
+                  onClick={() => setIsRegistrationsModalOpen(false)} 
+                  className="px-6 py-2 rounded-lg font-bold text-slate-600 bg-white border border-slate-200 hover:bg-slate-100 transition-colors"
+                >
+                  إغلاق
+                </button>
+              </div>
             </div>
           </div>
         </div>

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef } from 'react';
+import { supabase } from '@/lib/supabase';
 
 export default function ContactPage() {
   const formRef = useRef<HTMLFormElement>(null);
@@ -16,35 +17,19 @@ export default function ContactPage() {
       const formData = new FormData(e.currentTarget);
       const data = Object.fromEntries(formData.entries());
 
-      const response = await fetch("https://api.web3forms.com/submit", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
-        body: JSON.stringify({
-          access_key: "a30b2cde-7342-4380-80eb-16b6da6b1c3c",
-          subject: `رسالة تواصل جديدة: ${data.subject}`,
-          from_name: "موقع مجلس الشباب السوداني",
-          name: data.name,
-          email: "yasirfadlallaweb979@gmail.com", // Keeping your email as sender to bypass spam filters
-          replyto: data.email, // This allows you to click "Reply" in Gmail and it goes to the user
-          message: `📬 رسالة جديدة من صفحة اتصل بنا:
-
-👤 الاسم: ${data.name}
-✉️ البريد الإلكتروني للزائر: ${data.email}
-📌 الموضوع: ${data.subject}
-
-📝 نص الرسالة:
-${data.message}`
-        }),
+      const { error } = await supabase.from('messages').insert({
+        name: data.name,
+        email: data.email,
+        subject: data.subject,
+        message: data.message,
+        is_read: false,
       });
 
-      if (response.ok) {
+      if (error) {
+        setStatus({ type: 'error', message: 'حدث خطأ أثناء إرسال رسالتك، يرجى المحاولة مرة أخرى.' });
+      } else {
         setStatus({ type: 'success', message: 'تم إرسال رسالتك بنجاح! سنتواصل معك قريباً.' });
         formRef.current?.reset();
-      } else {
-        setStatus({ type: 'error', message: "حدث خطأ غير متوقع أثناء الإرسال." });
       }
     } catch (error) {
       setStatus({ type: 'error', message: 'تأكد من اتصالك بالإنترنت وحاول مجدداً.' });
@@ -78,7 +63,7 @@ ${data.message}`
                 </div>
                 <div>
                   <p className="font-bold text-slate-800 mb-1">رقم الهاتف</p>
-                  <p dir="ltr" className="text-right">+90 (555) 000-0000</p>
+                  <p dir="ltr" className="text-right">+90 531 435 73 00</p>
                 </div>
               </div>
 

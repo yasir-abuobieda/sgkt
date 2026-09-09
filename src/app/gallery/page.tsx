@@ -3,11 +3,8 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 
-const galleryCategories = ['الكل', 'مؤتمرات', 'فعاليات رياضية', 'ورش عمل'];
-
 export default function GalleryPage() {
-  const [filter, setFilter] = useState('الكل');
-  const [selectedImage, setSelectedImage] = useState<{src: string, title: string} | null>(null);
+  const [selectedImage, setSelectedImage] = useState<{src: string} | null>(null);
   const [galleryImages, setGalleryImages] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -23,9 +20,7 @@ export default function GalleryPage() {
     fetchGallery();
   }, []);
 
-  const filteredImages = filter === 'الكل' 
-    ? galleryImages 
-    : galleryImages.filter(img => img.category === filter);
+  const filteredImages = galleryImages;
 
   return (
     <div className="py-20 px-4 bg-slate-50 min-h-screen">
@@ -39,22 +34,6 @@ export default function GalleryPage() {
           </p>
         </div>
 
-        {/* Filters */}
-        <div className="flex flex-wrap justify-center gap-4 mb-12">
-          {galleryCategories.map(cat => (
-            <button 
-              key={cat}
-              onClick={() => setFilter(cat)}
-              className={`px-6 py-2.5 rounded-full font-bold transition-all duration-300 ${
-                filter === cat 
-                  ? 'bg-brand-maroon text-white shadow-md' 
-                  : 'bg-white text-slate-600 hover:bg-slate-100 hover:text-brand-maroon border border-slate-200'
-              }`}
-            >
-              {cat}
-            </button>
-          ))}
-        </div>
 
         {/* Masonry / Grid Gallery */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
@@ -62,17 +41,18 @@ export default function GalleryPage() {
             <div 
               key={img.id} 
               className="group relative h-72 rounded-2xl overflow-hidden cursor-pointer shadow-sm hover:shadow-xl transition-all duration-300"
-              onClick={() => setSelectedImage({ src: img.src, title: img.title })}
+              onClick={() => setSelectedImage({ src: img.src })}
             >
               <img 
                 src={img.src} 
-                alt={img.title} 
+                alt="صورة في المعرض" 
                 className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
               />
-              {/* Overlay */}
-              <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-slate-900/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-6">
-                <span className="text-brand-gold text-xs font-bold mb-2 uppercase tracking-wider">{img.category}</span>
-                <h3 className="text-white text-lg font-bold">{img.title}</h3>
+              {/* Overlay for hover effect */}
+              <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-white opacity-80" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
+                </svg>
               </div>
             </div>
           ))}
@@ -105,10 +85,9 @@ export default function GalleryPage() {
           >
             <img 
               src={selectedImage.src} 
-              alt={selectedImage.title} 
-              className="max-w-full max-h-[75vh] object-contain rounded-lg shadow-2xl"
+              alt="صورة" 
+              className="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl"
             />
-            <h3 className="text-white text-xl font-bold mt-6">{selectedImage.title}</h3>
           </div>
         </div>
       )}

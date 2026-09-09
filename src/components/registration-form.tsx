@@ -2,6 +2,7 @@
 
 import { useRef, useState } from 'react';
 import { useFormStatus } from 'react-dom';
+import { supabase } from '@/lib/supabase';
 
 function SubmitButton() {
   const { pending } = useFormStatus();
@@ -35,34 +36,27 @@ export function RegistrationForm({
       
       const eventName = data.eventId === '1' ? 'فعالية تعارف الشباب السوداني' : 
                         data.eventId === '4' ? 'مؤتمر الشباب السوداني الأول' : 
-                        data.eventId;
+                        preselectedEventTitle || 'فعالية غير محددة';
 
-      const response = await fetch("https://api.web3forms.com/submit", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
-        body: JSON.stringify({
-          access_key: "a30b2cde-7342-4380-80eb-16b6da6b1c3c",
-          subject: `تسجيل جديد: ${data.name} - ${eventName}`,
-          from_name: "مجلس الشباب السوداني",
-          name: data.name,
-          email: "yasirfadlallaweb979@gmail.com",
-          message: `📌 تفاصيل التسجيل الجديد:\n\n👤 الاسم: ${data.name}\n📱 رقم الهاتف: ${data.phone}\n📍 المدينة: ${data.city}\n🎟️ الفعالية: ${eventName}\n📝 الملاحظات: ${data.notes || "لا يوجد"}`
-        }),
+      // Save to Supabase
+      const { error: dbError } = await supabase.from('registrations').insert({
+        event_id: data.eventId && !isNaN(Number(data.eventId)) ? Number(data.eventId) : null,
+        event_title: eventName,
+        name: data.name,
+        phone: data.phone,
+        university: data.city, // Using the university column to store city
+        specialty: data.notes  // Using the specialty column to store notes
       });
 
-      const result = await response.json();
-      
-      if (response.ok) {
+      if (dbError) {
+        console.error("Database Registration Error:", dbError);
+        setStatus({ type: 'error', message: "حدث خطأ أثناء التسجيل، يرجى المحاولة مرة أخرى." });
+      } else {
         setStatus({ type: 'success', message: 'تم التسجيل بنجاح! شكراً لك.' });
         formRef.current?.reset();
         if (onSuccess) {
           setTimeout(() => onSuccess(), 2000);
         }
-      } else {
-        setStatus({ type: 'error', message: result.message || "حدث خطأ غير متوقع" });
       }
     } catch (error) {
       setStatus({ type: 'error', message: 'تأكد من اتصالك بالإنترنت وحاول مجدداً.' });

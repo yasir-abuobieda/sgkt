@@ -12,14 +12,11 @@ export default function AdminGallery() {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [currentItem, setCurrentItem] = useState<any>(null);
   
-  // Form states
   const [formData, setFormData] = useState({
     title: '',
     category: '',
     src: ''
   });
-
-  const [filter, setFilter] = useState('الكل');
   const [isUploading, setIsUploading] = useState(false);
 
   // Fetch from Supabase
@@ -36,7 +33,7 @@ export default function AdminGallery() {
     fetchGallery();
   }, []);
 
-  const filteredImages = images.filter(img => filter === 'الكل' ? true : img.category === filter);
+  const filteredImages = images;
 
   // Handle open Add/Edit modal
   const openModal = (item: any = null) => {
@@ -50,25 +47,46 @@ export default function AdminGallery() {
     setIsModalOpen(true);
   };
 
-  // Handle image upload to Supabase
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files || e.target.files.length === 0) return;
-    const file = e.target.files[0];
-    const fileExt = file.name.split('.').pop();
-    const fileName = `${Math.random().toString(36).substring(2, 15)}_${Date.now()}.${fileExt}`;
-    const filePath = `gallery/${fileName}`;
-
+    const files = Array.from(e.target.files);
     setIsUploading(true);
-    const { error: uploadError } = await supabase.storage.from('images').upload(filePath, file);
-    
-    if (uploadError) {
-      alert('خطأ في رفع الصورة: ' + uploadError.message);
-      setIsUploading(false);
-      return;
+
+    let uploadedUrls: string[] = [];
+
+    for (const file of files) {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Math.random().toString(36).substring(2, 15)}_${Date.now()}.${fileExt}`;
+      const filePath = `gallery/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage.from('images').upload(filePath, file);
+      
+      if (!uploadError) {
+        const { data } = supabase.storage.from('images').getPublicUrl(filePath);
+        uploadedUrls.push(data.publicUrl);
+      } else {
+        alert(`خطأ في رفع الصورة ${file.name}: ${uploadError.message}`);
+      }
     }
 
-    const { data } = supabase.storage.from('images').getPublicUrl(filePath);
-    setFormData({ ...formData, src: data.publicUrl });
+    if (uploadedUrls.length > 0) {
+      if (currentItem) {
+        // Edit mode: update the current item with the first image
+        await supabase.from('gallery').update({ src: uploadedUrls[0] }).eq('id', currentItem.id);
+        // If more than 1 uploaded, insert the rest as new
+        if (uploadedUrls.length > 1) {
+          const newInserts = uploadedUrls.slice(1).map(url => ({ title: '', category: '', src: url }));
+          await supabase.from('gallery').insert(newInserts);
+        }
+      } else {
+        // Add mode: insert all
+        const newInserts = uploadedUrls.map(url => ({ title: '', category: '', src: url }));
+        await supabase.from('gallery').insert(newInserts);
+      }
+      fetchGallery();
+      setIsModalOpen(false);
+    }
+    
     setIsUploading(false);
   };
 
@@ -116,29 +134,13 @@ export default function AdminGallery() {
         </button>
       </div>
 
-      <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
-        {['الكل', 'مؤتمرات', 'فعاليات رياضية', 'ورش عمل'].map(cat => (
-          <button 
-            key={cat}
-            onClick={() => setFilter(cat)}
-            className={`px-4 py-1.5 rounded-full text-sm font-bold whitespace-nowrap transition-colors ${filter === cat ? 'bg-slate-800 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'}`}
-          >
-            {cat}
-          </button>
-        ))}
-      </div>
-
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
         {filteredImages.map((img) => (
           <div key={img.id} className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden group">
             <div className="h-40 w-full overflow-hidden">
-              <img src={img.src} alt={img.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+              <img src={img.src} alt="صورة" className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
             </div>
             <div className="p-4 flex flex-col justify-between">
-              <div>
-                <h3 className="font-bold text-slate-800 text-sm mb-1 truncate">{img.title}</h3>
-                <span className="text-xs text-brand-gold font-medium">{img.category}</span>
-              </div>
               <div className="mt-4 flex gap-2">
                 <button onClick={() => openModal(img)} className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs py-2 rounded font-bold transition-colors">تعديل</button>
                 <button onClick={() => confirmDelete(img)} className="flex-1 bg-red-50 hover:bg-red-100 text-red-600 text-xs py-2 rounded font-bold transition-colors">حذف</button>
@@ -166,25 +168,12 @@ export default function AdminGallery() {
             </div>
             <form onSubmit={handleSave} className="p-6 space-y-4">
               <div>
-                <label className="block text-sm font-bold text-slate-700 mb-1">عنوان الفعالية / الصورة</label>
-                <input required type="text" className="w-full px-4 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-brand-maroon focus:outline-none" value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} />
-              </div>
-              <div>
-                <label className="block text-sm font-bold text-slate-700 mb-1">التصنيف</label>
-                <select required className="w-full px-4 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-brand-maroon focus:outline-none" value={formData.category} onChange={e => setFormData({...formData, category: e.target.value})}>
-                  <option value="">اختر التصنيف...</option>
-                  <option value="مؤتمرات">مؤتمرات</option>
-                  <option value="ورش عمل">ورش عمل</option>
-                  <option value="فعاليات رياضية">فعاليات رياضية</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-bold text-slate-700 mb-1">صورة الفعالية</label>
+                <label className="block text-sm font-bold text-slate-700 mb-1">ملف الصورة</label>
                 <div className="flex gap-2">
                   <input type="url" dir="ltr" placeholder="رابط URL" className="flex-1 px-4 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-brand-maroon focus:outline-none text-right" value={formData.src} onChange={e => setFormData({...formData, src: e.target.value})} />
                   <label className={`px-4 py-2 rounded-lg font-bold cursor-pointer transition-colors whitespace-nowrap flex items-center justify-center border ${isUploading ? 'bg-slate-200 text-slate-400 border-slate-200' : 'bg-slate-100 hover:bg-slate-200 text-slate-600 border-slate-200'}`}>
-                    {isUploading ? 'جاري الرفع...' : 'رفع محلي'}
-                    <input type="file" accept="image/*" className="hidden" disabled={isUploading} onChange={handleImageUpload} />
+                    {isUploading ? 'جاري الرفع...' : 'رفع من الجهاز'}
+                    <input type="file" accept="image/*" multiple className="hidden" disabled={isUploading} onChange={handleImageUpload} />
                   </label>
                 </div>
 

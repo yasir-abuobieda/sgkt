@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
+import type { Metadata } from 'next';
 
 // Tell Next.js: this is a fully dynamic route, never prerender
 export const dynamic = 'force-dynamic';
@@ -8,6 +9,39 @@ export const dynamicParams = true;
 // Return empty array = no static pages to generate at build time
 export async function generateStaticParams() {
   return [];
+}
+
+export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
+  const slug = params?.slug;
+  if (!slug) return {};
+
+  const decodedSlug = decodeURIComponent(slug);
+  const { supabase } = await import('@/lib/supabase');
+  const { data: article } = await supabase.from('news').select('*').eq('slug', decodedSlug).single();
+
+  if (!article) return { title: 'خبر غير موجود' };
+
+  return {
+    title: article.title,
+    description: article.content?.substring(0, 160) || article.title,
+    openGraph: {
+      title: article.title,
+      description: article.content?.substring(0, 160) || article.title,
+      type: 'article',
+      locale: 'ar_AR',
+      siteName: 'مجلس الشباب السوداني',
+      images: article.image
+        ? [{ url: article.image, width: 1200, height: 630, alt: article.title }]
+        : [],
+      publishedTime: article.date,
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: article.title,
+      description: article.content?.substring(0, 160) || article.title,
+      images: article.image ? [article.image] : [],
+    },
+  };
 }
 
 export default async function NewsArticlePage({ params }: { params: { slug: string } }) {
@@ -33,9 +67,6 @@ export default async function NewsArticlePage({ params }: { params: { slug: stri
         </Link>
         
         <div className="mb-10">
-          <span className="bg-brand-maroon/10 text-brand-maroon px-4 py-1.5 rounded-full text-sm font-bold mb-6 inline-block">
-            {article.category}
-          </span>
           <h1 className="text-3xl md:text-5xl font-extrabold text-slate-800 mb-6 leading-[1.3]">
             {article.title}
           </h1>
