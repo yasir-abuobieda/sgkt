@@ -44,7 +44,10 @@ iframe[class*="VIpgJd"],
 #goog-gt-vt,
 .goog-tooltip,
 .goog-tooltip:hover,
-.goog-te-balloon-frame {
+.goog-te-balloon-frame,
+.VIpgJd-yAWNEb-hvhzNd-THI6Vb,
+.VIpgJd-yAWNEb-VIpgJd-fmcmS-sn54Q,
+div[class*="VIpgJd-yAWNEb"] {
   display: none !important;
   visibility: hidden !important;
   opacity: 0 !important;
