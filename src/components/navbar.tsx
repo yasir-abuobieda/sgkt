@@ -43,7 +43,6 @@ export function Navbar() {
   const changeLanguage = (lang: string) => {
     setCurrentLang(lang);
     setIsLangOpen(false);
-    setIsTranslating(true);
 
     const target = lang === 'ENG' ? 'en' : lang === 'TR' ? 'tr' : 'ar';
 
@@ -55,7 +54,7 @@ export function Navbar() {
         document.cookie = `googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=.${window.location.hostname};`;
         document.cookie = `googtrans=/ar/ar; path=/; domain=.${window.location.hostname};`;
       }
-      setTimeout(() => window.location.reload(), 300);
+      window.location.reload();
       return;
     } else {
       document.cookie = `googtrans=/ar/${target}; path=/;`;
@@ -78,13 +77,8 @@ export function Navbar() {
       const isLtr = target === 'en' || target === 'tr';
       document.documentElement.dir = isLtr ? 'ltr' : 'rtl';
       document.documentElement.lang = target;
-      
-      // Stop animation after translation applies
-      setTimeout(() => {
-        setIsTranslating(false);
-      }, 800);
     } else {
-      setTimeout(() => window.location.reload(), 300);
+      window.location.reload();
     }
   };
 
@@ -195,14 +189,6 @@ export function Navbar() {
           </div>
         )}
       </nav>
-
-      {/* Fullscreen Translation Loading Overlay */}
-      {isTranslating && (
-        <div className="fixed inset-0 z-[99999] bg-white/70 backdrop-blur-sm flex flex-col items-center justify-center">
-          <div className="w-12 h-12 border-4 border-slate-200 border-t-brand-maroon rounded-full animate-spin mb-4"></div>
-          <p className="text-brand-maroon font-bold animate-pulse text-lg tracking-wide">جاري الترجمة...</p>
-        </div>
-      )}
     </>
   );
 }

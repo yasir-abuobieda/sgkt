@@ -44,10 +44,7 @@ iframe[class*="VIpgJd"],
 #goog-gt-vt,
 .goog-tooltip,
 .goog-tooltip:hover,
-.goog-te-balloon-frame,
-.VIpgJd-yAWNEb-hvhzNd-THI6Vb,
-.VIpgJd-yAWNEb-VIpgJd-fmcmS-sn54Q,
-div[class*="VIpgJd-yAWNEb"] {
+.goog-te-balloon-frame {
   display: none !important;
   visibility: hidden !important;
   opacity: 0 !important;
@@ -78,11 +75,21 @@ body > .skiptranslate {
   z-index: -9999 !important;
 }
 
-/* Remove hover highlight on translated text */
-.goog-text-highlight {
+/* Remove hover highlight on translated text and keep normal cursor */
+.goog-text-highlight,
+.goog-text-highlight:hover,
+.goog-text-highlight:active,
+.goog-text-highlight:focus,
+font,
+font:hover,
+font:active,
+font:focus {
+  background: transparent !important;
   background-color: transparent !important;
   box-shadow: none !important;
   border: none !important;
+  cursor: inherit !important;
+  outline: none !important;
 }
 
 /* Hide translation flash */
