@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import logoSgk from '@/logo-sgk.png';
+import logoSgk from '@/logo.png';
 
 export function Navbar() {
   const [isLangOpen, setIsLangOpen] = useState(false);
@@ -95,18 +95,13 @@ export function Navbar() {
       <div className="container mx-auto px-4 h-24 flex items-center justify-between">
         
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-2 md:gap-4 hover:opacity-90 transition shrink-0">
+        <Link href="/" className="flex items-center hover:opacity-90 transition shrink-0">
           <Image 
             src={logoSgk} 
-            alt="شعار" 
-            className="h-14 md:h-16 w-auto object-contain" 
-            style={{ clipPath: 'inset(5% 5% 30% 5%)', transform: 'scale(1.6)', transformOrigin: 'right center' }}
+            alt="مجلس الشباب السوداني" 
+            className="h-16 md:h-20 w-auto object-contain" 
             priority 
           />
-          <div className="flex flex-col justify-center mt-1 hidden sm:flex">
-            <span className="font-extrabold text-xl md:text-2xl text-brand-maroon leading-none mb-1">مجلس الشباب السوداني</span>
-            <span className="text-[9px] md:text-[11px] font-bold text-brand-gold tracking-widest uppercase">Sudan Gençlik Konseyi</span>
-          </div>
         </Link>
         
         {/* Desktop Links */}

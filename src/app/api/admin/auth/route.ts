@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
   const response = NextResponse.json({ success: true });
   response.cookies.set('admin_token', 'secure_sgk_token_2026', {
     httpOnly: true,        // Not accessible via JS (prevents XSS token theft)
-    secure: process.env.NODE_ENV === 'production', // HTTPS only in production
+    secure: process.env.NODE_ENV === 'production' && request.headers.get('x-forwarded-proto') === 'https', // HTTPS only in production if using domain
     sameSite: 'strict',    // Prevents CSRF
     maxAge: 60 * 60 * 24,  // 24 hours
     path: '/',

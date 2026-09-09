@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import logoSgk from '@/logo-sgk.png';
+import logoSgk from '@/logo.png';
 
 export default function AdminLogin() {
   const [password, setPassword] = useState('');
