@@ -8,7 +8,7 @@ import { cookies } from 'next/headers';
 
 const cairo = Cairo({ subsets: ["arabic", "latin"] });
 
-const SITE_URL = 'https://sgk.com.tr';
+const SITE_URL = 'https://sgkturkiye.org';
 const SITE_NAME = 'مجلس الشباب السوداني بتركيا | Sudan Gençlik Konseyi';
 const SITE_DESC = 'المنصة الرسمية لمجلس الشباب السوداني بتركيا - Sudan Gençlik Konseyi (SGK). هيئة شبابية وطنية مستقلة تمثل الإطار الجامع للشباب السوداني في تركيا.';
 const OG_IMAGE = `${SITE_URL}/og-image.jpg`;

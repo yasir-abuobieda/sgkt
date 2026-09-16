@@ -14,8 +14,21 @@ export default async function Home() {
   // Fetch upcoming 5 events
   const { data: eventsData } = await supabase.from('events').select('*').eq('status', 'upcoming').order('created_at', { ascending: false }).limit(5);
   const upcomingEvents = eventsData || [];
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Organization',
+    name: 'مجلس الشباب السوداني بتركيا | Sudan Gençlik Konseyi',
+    url: 'https://sgkturkiye.org',
+    logo: 'https://sgkturkiye.org/favicon.png',
+    description: 'المنصة الرسمية لمجلس الشباب السوداني بتركيا. هيئة شبابية وطنية مستقلة تمثل الإطار الجامع للشباب السوداني في تركيا.',
+  };
+
   return (
     <div className="flex flex-col min-h-screen">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       {/* Hero Section */}
       <section className="bg-gradient-to-b from-brand-maroon/5 to-white py-24 px-4 border-b border-brand-maroon/10">
         <div className="container mx-auto max-w-5xl text-center">

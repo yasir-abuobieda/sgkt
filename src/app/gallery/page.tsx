@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 
 export default function GalleryPage() {
-  const [selectedImage, setSelectedImage] = useState<{src: string} | null>(null);
+  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [galleryImages, setGalleryImages] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -22,6 +22,24 @@ export default function GalleryPage() {
 
   const filteredImages = galleryImages;
 
+  // Keyboard navigation
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (selectedIndex === null) return;
+      if (e.key === 'ArrowRight') {
+        // User requested: Right arrow goes to next image
+        setSelectedIndex(prev => prev !== null && prev < filteredImages.length - 1 ? prev + 1 : 0);
+      } else if (e.key === 'ArrowLeft') {
+        // User requested: Left arrow goes to previous image
+        setSelectedIndex(prev => prev !== null && prev > 0 ? prev - 1 : filteredImages.length - 1);
+      } else if (e.key === 'Escape') {
+        setSelectedIndex(null);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [selectedIndex, filteredImages.length]);
+
   return (
     <div className="py-20 px-4 bg-slate-50 min-h-screen">
       <div className="container mx-auto max-w-6xl">
@@ -37,11 +55,11 @@ export default function GalleryPage() {
 
         {/* Masonry / Grid Gallery */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-          {filteredImages.map(img => (
+          {filteredImages.map((img, index) => (
             <div 
               key={img.id} 
               className="group relative h-72 rounded-2xl overflow-hidden cursor-pointer shadow-sm hover:shadow-xl transition-all duration-300"
-              onClick={() => setSelectedImage({ src: img.src })}
+              onClick={() => setSelectedIndex(index)}
             >
               <img 
                 src={img.src} 
@@ -58,7 +76,7 @@ export default function GalleryPage() {
           ))}
         </div>
 
-        {filteredImages.length === 0 && (
+        {filteredImages.length === 0 && !isLoading && (
           <div className="text-center py-20 text-slate-500 font-medium">
             لا توجد صور في هذا القسم حالياً.
           </div>
@@ -67,16 +85,40 @@ export default function GalleryPage() {
       </div>
 
       {/* Lightbox Modal */}
-      {selectedImage && (
+      {selectedIndex !== null && (
         <div 
           className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/95 backdrop-blur-sm p-4"
-          onClick={() => setSelectedImage(null)}
+          onClick={() => setSelectedIndex(null)}
+          dir="rtl"
         >
+          {/* Close button */}
           <button 
-            className="absolute top-6 right-6 text-white/70 hover:text-white bg-slate-800/50 hover:bg-brand-maroon rounded-full p-2 transition-colors"
-            onClick={() => setSelectedImage(null)}
+            className="absolute top-6 left-6 md:right-6 md:left-auto text-white/70 hover:text-white bg-slate-800/50 hover:bg-brand-maroon rounded-full p-2 transition-colors z-[60]"
+            onClick={(e) => { e.stopPropagation(); setSelectedIndex(null); }}
           >
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+          </button>
+
+          {/* Right Arrow (Next Image) */}
+          <button 
+            className="absolute right-4 md:right-10 top-1/2 -translate-y-1/2 text-white/70 hover:text-white bg-slate-800/50 hover:bg-brand-maroon rounded-full p-3 transition-colors z-[60]"
+            onClick={(e) => { 
+              e.stopPropagation(); 
+              setSelectedIndex(prev => prev !== null && prev < filteredImages.length - 1 ? prev + 1 : 0); 
+            }}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+          </button>
+
+          {/* Left Arrow (Previous Image) */}
+          <button 
+            className="absolute left-4 md:left-10 top-1/2 -translate-y-1/2 text-white/70 hover:text-white bg-slate-800/50 hover:bg-brand-maroon rounded-full p-3 transition-colors z-[60]"
+            onClick={(e) => { 
+              e.stopPropagation(); 
+              setSelectedIndex(prev => prev !== null && prev > 0 ? prev - 1 : filteredImages.length - 1); 
+            }}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
           </button>
           
           <div 
@@ -84,10 +126,14 @@ export default function GalleryPage() {
             onClick={(e) => e.stopPropagation()}
           >
             <img 
-              src={selectedImage.src} 
+              src={filteredImages[selectedIndex].src} 
               alt="صورة" 
               className="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl"
             />
+            {/* Image counter optional */}
+            <div className="absolute -bottom-10 text-white/60 font-medium tracking-wider">
+              {selectedIndex + 1} / {filteredImages.length}
+            </div>
           </div>
         </div>
       )}
