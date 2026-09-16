@@ -38,7 +38,7 @@ export default function AdminLogin() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4" dir="rtl">
+    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4 notranslate" dir="rtl">
       <div className="bg-white p-8 rounded-2xl shadow-xl max-w-md w-full border border-slate-100 text-center">
         <div className="flex justify-center mb-6">
           <Image src={logoSgk} alt="الشعار" className="h-24 w-auto object-contain" />

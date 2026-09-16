@@ -7,6 +7,9 @@ export default function AdminNews() {
   const [news, setNews] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   
+  // Selection states
+  const [selectedIds, setSelectedIds] = useState<number[]>([]);
+
   // Modal states
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -32,6 +35,7 @@ export default function AdminNews() {
       setNews(data);
     }
     setIsLoading(false);
+    setSelectedIds([]); // Clear selection after fetch
   };
 
   useEffect(() => {
@@ -92,7 +96,6 @@ export default function AdminNews() {
       else fetchNews();
     } else {
       // Add to Supabase
-      // Generate a unique slug to prevent duplicate key errors
       const baseSlug = formData.title.trim().replace(/\s+/g, '-').toLowerCase();
       const uniqueSlug = `${baseSlug}-${Math.random().toString(36).substring(2, 8)}`;
       
@@ -103,17 +106,38 @@ export default function AdminNews() {
     setIsModalOpen(false);
   };
 
+  // Selection handlers
+  const toggleSelectAll = () => {
+    if (selectedIds.length === filteredNews.length && filteredNews.length > 0) {
+      setSelectedIds([]);
+    } else {
+      setSelectedIds(filteredNews.map(item => item.id));
+    }
+  };
+
+  const toggleSelect = (id: number) => {
+    if (selectedIds.includes(id)) {
+      setSelectedIds(selectedIds.filter(itemId => itemId !== id));
+    } else {
+      setSelectedIds([...selectedIds, id]);
+    }
+  };
+
   // Handle delete
-  const confirmDelete = (item: any) => {
-    setCurrentItem(item);
+  const confirmDelete = (item: any = null) => {
+    setCurrentItem(item); // null means bulk delete
     setIsDeleteModalOpen(true);
   };
 
   const handleDelete = async () => {
     if (currentItem) {
+      // Single delete
       await supabase.from('news').delete().eq('id', currentItem.id);
-      fetchNews();
+    } else if (selectedIds.length > 0) {
+      // Bulk delete
+      await supabase.from('news').delete().in('id', selectedIds);
     }
+    fetchNews();
     setIsDeleteModalOpen(false);
   };
 
@@ -121,15 +145,28 @@ export default function AdminNews() {
     <div>
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold text-slate-800">إدارة الأخبار</h2>
-        <button 
-          onClick={() => openModal()}
-          className="bg-brand-maroon hover:bg-brand-maroon/90 text-white px-5 py-2.5 rounded-lg font-bold flex items-center gap-2 shadow-sm transition-all"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
-          </svg>
-          إضافة خبر جديد
-        </button>
+        <div className="flex gap-3">
+          {selectedIds.length > 0 && (
+            <button 
+              onClick={() => confirmDelete(null)}
+              className="bg-red-100 text-red-600 hover:bg-red-200 px-5 py-2.5 rounded-lg font-bold flex items-center gap-2 shadow-sm transition-all"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
+              حذف المحدد ({selectedIds.length})
+            </button>
+          )}
+          <button 
+            onClick={() => openModal()}
+            className="bg-brand-maroon hover:bg-brand-maroon/90 text-white px-5 py-2.5 rounded-lg font-bold flex items-center gap-2 shadow-sm transition-all"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+            </svg>
+            إضافة خبر جديد
+          </button>
+        </div>
       </div>
 
       {/* Table */}
@@ -137,6 +174,14 @@ export default function AdminNews() {
         <table className="w-full text-right">
           <thead className="bg-slate-50 border-b border-slate-200 text-slate-600 font-bold text-sm">
             <tr>
+              <th className="p-4 w-12 text-center">
+                <input 
+                  type="checkbox" 
+                  className="w-4 h-4 rounded border-slate-300 text-brand-maroon focus:ring-brand-maroon cursor-pointer"
+                  checked={selectedIds.length === filteredNews.length && filteredNews.length > 0}
+                  onChange={toggleSelectAll}
+                />
+              </th>
               <th className="p-4">صورة الخبر</th>
               <th className="p-4">عنوان الخبر</th>
               <th className="p-4">التاريخ</th>
@@ -154,7 +199,15 @@ export default function AdminNews() {
                 </td>
               </tr>
             ) : filteredNews.map((item) => (
-              <tr key={item.id} className="hover:bg-slate-50 transition-colors">
+              <tr key={item.id} className={`hover:bg-slate-50 transition-colors ${selectedIds.includes(item.id) ? 'bg-brand-maroon/5' : ''}`}>
+                <td className="p-4 text-center">
+                  <input 
+                    type="checkbox" 
+                    className="w-4 h-4 rounded border-slate-300 text-brand-maroon focus:ring-brand-maroon cursor-pointer"
+                    checked={selectedIds.includes(item.id)}
+                    onChange={() => toggleSelect(item.id)}
+                  />
+                </td>
                 <td className="p-4">
                   <div className="w-16 h-12 rounded bg-slate-200 overflow-hidden">
                     <img src={item.image} alt={item.title} className="w-full h-full object-cover" />
@@ -246,7 +299,12 @@ export default function AdminNews() {
               <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
             </div>
             <h3 className="text-xl font-bold text-slate-800 mb-2">تأكيد الحذف</h3>
-            <p className="text-slate-500 mb-6">هل أنت متأكد من حذف هذا الخبر؟ هذا الإجراء لا يمكن التراجع عنه.</p>
+            <p className="text-slate-500 mb-6">
+              {currentItem 
+                ? 'هل أنت متأكد من حذف هذا الخبر؟ هذا الإجراء لا يمكن التراجع عنه.'
+                : `هل أنت متأكد من حذف (${selectedIds.length}) خبر محدد؟ هذا الإجراء لا يمكن التراجع عنه.`
+              }
+            </p>
             <div className="flex justify-center gap-3">
               <button onClick={() => setIsDeleteModalOpen(false)} className="px-6 py-2 rounded-lg font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors">إلغاء</button>
               <button onClick={handleDelete} className="px-6 py-2 rounded-lg font-bold text-white bg-red-600 hover:bg-red-700 transition-colors">نعم، احذف</button>

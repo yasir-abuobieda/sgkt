@@ -7,6 +7,9 @@ export default function AdminGallery() {
   const [images, setImages] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   
+  // Selection states
+  const [selectedIds, setSelectedIds] = useState<number[]>([]);
+
   // Modal states
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -27,6 +30,7 @@ export default function AdminGallery() {
       setImages(data);
     }
     setIsLoading(false);
+    setSelectedIds([]); // Clear selection after fetch
   };
 
   useEffect(() => {
@@ -105,17 +109,38 @@ export default function AdminGallery() {
     setIsModalOpen(false);
   };
 
+  // Selection handlers
+  const toggleSelectAll = () => {
+    if (selectedIds.length === filteredImages.length && filteredImages.length > 0) {
+      setSelectedIds([]);
+    } else {
+      setSelectedIds(filteredImages.map(img => img.id));
+    }
+  };
+
+  const toggleSelect = (id: number) => {
+    if (selectedIds.includes(id)) {
+      setSelectedIds(selectedIds.filter(itemId => itemId !== id));
+    } else {
+      setSelectedIds([...selectedIds, id]);
+    }
+  };
+
   // Handle delete
-  const confirmDelete = (item: any) => {
-    setCurrentItem(item);
+  const confirmDelete = (item: any = null) => {
+    setCurrentItem(item); // null means bulk delete
     setIsDeleteModalOpen(true);
   };
 
   const handleDelete = async () => {
     if (currentItem) {
+      // Single delete
       await supabase.from('gallery').delete().eq('id', currentItem.id);
-      fetchGallery();
+    } else if (selectedIds.length > 0) {
+      // Bulk delete
+      await supabase.from('gallery').delete().in('id', selectedIds);
     }
+    fetchGallery();
     setIsDeleteModalOpen(false);
   };
 
@@ -123,20 +148,49 @@ export default function AdminGallery() {
     <div>
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold text-slate-800">إدارة معرض الصور</h2>
-        <button 
-          onClick={() => openModal()}
-          className="bg-brand-maroon hover:bg-brand-maroon/90 text-white px-5 py-2.5 rounded-lg font-bold flex items-center gap-2 shadow-sm transition-all"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-          </svg>
-          رفع صورة جديدة
-        </button>
+        <div className="flex gap-3">
+          {filteredImages.length > 0 && (
+             <button 
+                onClick={toggleSelectAll} 
+                className="bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 px-5 py-2.5 rounded-lg font-bold flex items-center gap-2 shadow-sm transition-all"
+             >
+                {selectedIds.length === filteredImages.length ? 'إلغاء تحديد الكل' : 'تحديد الكل'}
+             </button>
+          )}
+          {selectedIds.length > 0 && (
+             <button 
+               onClick={() => confirmDelete(null)}
+               className="bg-red-100 text-red-600 hover:bg-red-200 px-5 py-2.5 rounded-lg font-bold flex items-center gap-2 shadow-sm transition-all"
+             >
+               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                 <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+               </svg>
+               حذف المحدد ({selectedIds.length})
+             </button>
+          )}
+          <button 
+            onClick={() => openModal()}
+            className="bg-brand-maroon hover:bg-brand-maroon/90 text-white px-5 py-2.5 rounded-lg font-bold flex items-center gap-2 shadow-sm transition-all"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+            </svg>
+            رفع صورة جديدة
+          </button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
         {filteredImages.map((img) => (
-          <div key={img.id} className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden group">
+          <div key={img.id} className={`relative bg-white rounded-xl shadow-sm border overflow-hidden group transition-all ${selectedIds.includes(img.id) ? 'border-brand-maroon ring-2 ring-brand-maroon/20' : 'border-slate-200'}`}>
+            <div className="absolute top-3 right-3 z-10">
+              <input 
+                type="checkbox" 
+                className="w-5 h-5 rounded border-slate-300 text-brand-maroon focus:ring-brand-maroon cursor-pointer shadow-sm"
+                checked={selectedIds.includes(img.id)}
+                onChange={() => toggleSelect(img.id)}
+              />
+            </div>
             <div className="h-40 w-full overflow-hidden">
               <img src={img.src} alt="صورة" className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
             </div>
@@ -195,7 +249,12 @@ export default function AdminGallery() {
               <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
             </div>
             <h3 className="text-xl font-bold text-slate-800 mb-2">تأكيد الحذف</h3>
-            <p className="text-slate-500 mb-6">هل أنت متأكد من حذف هذه الصورة؟ هذا الإجراء لا يمكن التراجع عنه.</p>
+            <p className="text-slate-500 mb-6">
+              {currentItem 
+                ? 'هل أنت متأكد من حذف هذه الصورة؟ هذا الإجراء لا يمكن التراجع عنه.'
+                : `هل أنت متأكد من حذف (${selectedIds.length}) صورة محددة؟ هذا الإجراء لا يمكن التراجع عنه.`
+              }
+            </p>
             <div className="flex justify-center gap-3">
               <button onClick={() => setIsDeleteModalOpen(false)} className="px-6 py-2 rounded-lg font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors">إلغاء</button>
               <button onClick={handleDelete} className="px-6 py-2 rounded-lg font-bold text-white bg-red-600 hover:bg-red-700 transition-colors">نعم، احذف</button>

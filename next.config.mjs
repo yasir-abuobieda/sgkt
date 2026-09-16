@@ -24,10 +24,10 @@ const securityHeaders = [
       "style-src 'self' 'unsafe-inline' https://*.google.com https://*.googleapis.com https://*.gstatic.com",
       // Fonts
       "font-src 'self' https://*.gstatic.com https://fonts.gstatic.com data:",
-      // Images: self + supabase + unsplash + Google Translate + gstatic
-      "img-src 'self' data: blob: https://*.supabase.co https://images.unsplash.com https://*.gstatic.com https://*.google.com https://*.googleapis.com",
-      // Connections: self + supabase + Google Translate API + dev websockets
-      "connect-src 'self' https://*.supabase.co https://*.google.com https://*.googleapis.com https://*.gstatic.com ws: wss:",
+      // Images: self + supabase + api.sgkturkiye.org + unsplash + Google Translate + gstatic
+      "img-src 'self' data: blob: https://*.supabase.co https://api.sgkturkiye.org https://images.unsplash.com https://*.gstatic.com https://*.google.com https://*.googleapis.com",
+      // Connections: self + supabase + api.sgkturkiye.org + Google Translate API + dev websockets
+      "connect-src 'self' https://*.supabase.co https://api.sgkturkiye.org https://*.google.com https://*.googleapis.com https://*.gstatic.com ws: wss:",
       // Frames (Google Translate uses iframes)
       "frame-src 'self' https://*.google.com https://*.googleapis.com",
       // No plugins
