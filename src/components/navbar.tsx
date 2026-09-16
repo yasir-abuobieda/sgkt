@@ -5,11 +5,15 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import logoSgk from '@/logo.png';
+import righttoleftSgk from '@/righttoleft.png';
 
-export function Navbar() {
+export function Navbar({ initialLang = 'ar' }: { initialLang?: string }) {
   const [isLangOpen, setIsLangOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [currentLang, setCurrentLang] = useState('AR');
+  
+  const defaultLang = initialLang === 'en' ? 'ENG' : initialLang === 'tr' ? 'TR' : 'AR';
+  const [currentLang, setCurrentLang] = useState(defaultLang);
+  
   const [isTranslating, setIsTranslating] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
@@ -91,6 +95,8 @@ export function Navbar() {
     { name: 'تواصل معنا', href: '/contact' },
   ];
 
+  const activeLogo = (currentLang === 'TR' || currentLang === 'ENG') ? righttoleftSgk : logoSgk;
+
   return (
     <>
       <nav className="border-b bg-white sticky top-0 z-50 shadow-sm relative">
@@ -99,7 +105,7 @@ export function Navbar() {
           {/* Logo */}
           <Link href="/" className="flex items-center hover:opacity-90 transition shrink-0">
             <Image 
-              src={logoSgk} 
+              src={activeLogo} 
               alt="مجلس الشباب السوداني" 
               className="h-16 md:h-20 w-auto object-contain" 
               priority 

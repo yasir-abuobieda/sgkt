@@ -4,7 +4,7 @@ import { usePathname } from 'next/navigation';
 import { Navbar } from './navbar';
 import { Footer } from './footer';
 
-export function ClientLayout({ children }: { children: React.ReactNode }) {
+export function ClientLayout({ children, initialLang }: { children: React.ReactNode, initialLang?: string }) {
   const pathname = usePathname();
   const isAdminRoute = pathname?.startsWith('/admin');
   const isLoginRoute = pathname?.startsWith('/login');
@@ -13,7 +13,7 @@ export function ClientLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <>
-      {showPublicLayout && <Navbar />}
+      {showPublicLayout && <Navbar initialLang={initialLang} />}
       <main className={showPublicLayout ? "min-h-screen" : ""}>
         {children}
       </main>

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Cairo } from "next/font/google";
 import "../app/globals.css";
 import { ClientLayout } from "@/components/client-layout";
+import favicon from '@/favicon.png';
 
 import { cookies } from 'next/headers';
 
@@ -42,6 +43,9 @@ export const metadata: Metadata = {
     description: SITE_DESC,
     images: [OG_IMAGE],
   },
+  icons: {
+    icon: favicon.src,
+  }
 };
 
 import { GoogleTranslate } from "@/components/google-translate";
@@ -61,7 +65,7 @@ export default function RootLayout({
     <html lang={lang} dir={dir} suppressHydrationWarning>
       <body className={`${cairo.className} bg-slate-50 text-slate-800`} suppressHydrationWarning>
         <GoogleTranslate />
-        <ClientLayout>
+        <ClientLayout initialLang={lang}>
           {children}
         </ClientLayout>
       </body>
