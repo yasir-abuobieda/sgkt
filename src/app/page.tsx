@@ -16,8 +16,8 @@ export default async function Home() {
   const { data: eventsData } = await supabase.from('events').select('*').order('created_at', { ascending: false });
   const allEvents = eventsData || [];
   
-  // Filter for upcoming events dynamically (limit to 5)
-  const upcomingEvents = allEvents.filter(event => !isEventPast(event.date)).slice(0, 5);
+  // Get latest 5 events regardless of past/upcoming status
+  const latestEvents = allEvents.slice(0, 5);
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'Organization',
@@ -92,7 +92,7 @@ export default async function Home() {
           <div className="flex justify-between items-end mb-12">
             <div>
               <span className="text-brand-gold font-bold text-lg mb-2 block">أنشطتنا</span>
-              <h2 className="text-3xl md:text-4xl font-bold text-brand-maroon">الفعاليات القادمة</h2>
+              <h2 className="text-3xl md:text-4xl font-bold text-brand-maroon">آخر الفعاليات</h2>
             </div>
             <Link href="/events" className="hidden md:inline-flex items-center text-slate-500 font-bold hover:text-brand-maroon transition-colors">
               عرض كل الفعاليات
@@ -100,7 +100,7 @@ export default async function Home() {
             </Link>
           </div>
 
-          <EventsCarousel events={upcomingEvents} />
+          <EventsCarousel events={latestEvents} />
           <div className="mt-10 text-center md:hidden">
             <Link href="/events" className="inline-flex items-center text-brand-maroon font-bold hover:text-brand-gold transition-colors border-b-2 border-brand-maroon pb-1">
               عرض كل الفعاليات

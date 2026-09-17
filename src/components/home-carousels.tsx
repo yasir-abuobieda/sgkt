@@ -12,20 +12,7 @@ import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
 
-export function EventsCarousel({ events: initialEvents }: { events: any[] }) {
-  const [events, setEvents] = useState(initialEvents);
-
-  useEffect(() => {
-    setEvents(initialEvents);
-  }, [initialEvents]);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setEvents(prev => prev.filter(event => !isEventPast(event.date)));
-    }, 5000);
-    return () => clearInterval(interval);
-  }, []);
-
+export function EventsCarousel({ events }: { events: any[] }) {
   if (!events || events.length === 0) {
     return <div className="text-center text-slate-500 py-10">لا توجد فعاليات حالياً.</div>;
   }
@@ -46,15 +33,23 @@ export function EventsCarousel({ events: initialEvents }: { events: any[] }) {
         dir="rtl"
         className="pb-12"
       >
-        {events.map((event) => (
+        {events.map((event) => {
+          const isPast = isEventPast(event.date);
+          return (
           <SwiperSlide key={event.id} className="h-auto">
             <Link href={`/events/${event.id}`} className="bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-100 hover:shadow-xl transition-all group flex flex-col h-full cursor-pointer block">
               <div className="relative h-56 w-full overflow-hidden bg-slate-200 shrink-0">
                 <img src={event.image} alt={event.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                 <div className="absolute top-4 right-4">
-                  <span className="px-4 py-1.5 rounded-full text-xs font-bold text-white shadow-md bg-brand-gold">
-                    قريباً
-                  </span>
+                  {isPast ? (
+                    <span className="px-4 py-1.5 rounded-full text-xs font-bold text-slate-500 shadow-md bg-white">
+                      منتهية
+                    </span>
+                  ) : (
+                    <span className="px-4 py-1.5 rounded-full text-xs font-bold text-white shadow-md bg-brand-gold">
+                      قريباً
+                    </span>
+                  )}
                 </div>
               </div>
               <div className="p-6 flex flex-col flex-grow">
@@ -81,7 +76,8 @@ export function EventsCarousel({ events: initialEvents }: { events: any[] }) {
               </div>
             </Link>
           </SwiperSlide>
-        ))}
+          );
+        })}
       </Swiper>
       <div className="events-pagination flex justify-center mt-8 gap-2"></div>
     </div>
