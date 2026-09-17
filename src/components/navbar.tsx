@@ -58,8 +58,6 @@ export function Navbar({ initialLang = 'ar' }: { initialLang?: string }) {
         document.cookie = `googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=.${window.location.hostname};`;
         document.cookie = `googtrans=/ar/ar; path=/; domain=.${window.location.hostname};`;
       }
-      window.location.reload();
-      return;
     } else {
       document.cookie = `googtrans=/ar/${target}; path=/;`;
       if (window.location.hostname !== 'localhost') {
@@ -67,23 +65,8 @@ export function Navbar({ initialLang = 'ar' }: { initialLang?: string }) {
       }
     }
 
-    // 2. Trigger translation immediately if widget is in DOM
-    const select = document.querySelector('.goog-te-combo') as HTMLSelectElement | null;
-    if (select) {
-      select.value = target;
-      select.dispatchEvent(new Event('change'));
-      try {
-        const evt = document.createEvent('HTMLEvents');
-        evt.initEvent('change', true, true);
-        select.dispatchEvent(evt);
-      } catch (e) {}
-
-      const isLtr = target === 'en' || target === 'tr';
-      document.documentElement.dir = isLtr ? 'ltr' : 'rtl';
-      document.documentElement.lang = target;
-    } else {
-      window.location.reload();
-    }
+    // 2. Always reload to ensure Google Translate script reads the new cookie reliably
+    window.location.reload();
   };
 
   const navLinks = [
