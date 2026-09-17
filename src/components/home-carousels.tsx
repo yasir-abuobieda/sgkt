@@ -48,7 +48,7 @@ export function EventsCarousel({ events: initialEvents }: { events: any[] }) {
       >
         {events.map((event) => (
           <SwiperSlide key={event.id} className="h-auto">
-            <div className="bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-100 hover:shadow-xl transition-all group flex flex-col h-full">
+            <Link href={`/events/${event.id}`} className="bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-100 hover:shadow-xl transition-all group flex flex-col h-full cursor-pointer block">
               <div className="relative h-56 w-full overflow-hidden bg-slate-200 shrink-0">
                 <img src={event.image} alt={event.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                 <div className="absolute top-4 right-4">
@@ -58,7 +58,7 @@ export function EventsCarousel({ events: initialEvents }: { events: any[] }) {
                 </div>
               </div>
               <div className="p-6 flex flex-col flex-grow">
-                <h3 className="text-xl font-bold text-brand-maroon mb-4 leading-tight">{event.title}</h3>
+                <h3 className="text-xl font-bold text-brand-maroon mb-4 leading-tight group-hover:text-brand-maroon/80 transition-colors">{event.title}</h3>
                 <div className="flex items-center gap-2 text-sm text-slate-500 mb-2 font-medium">
                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-brand-gold"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
                   <span dir="ltr">{event.date?.includes(' | ') ? event.date.split(' | ')[0] : event.date}</span>
@@ -70,15 +70,16 @@ export function EventsCarousel({ events: initialEvents }: { events: any[] }) {
                     </>
                   )}
                 </div>
-                <div className="flex items-center gap-2 text-sm text-slate-500 mb-6 font-medium">
+                <div className="flex items-center gap-2 text-sm text-slate-500 mb-6 font-medium flex-grow">
                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-brand-gold"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
                   <span>{event.location}</span>
                 </div>
-                <div className="mt-auto w-full [&>button]:w-full [&>button]:py-3">
-                  <JoinUsButton preselectedEventId={event.id.toString()} preselectedEventTitle={event.title} />
+                <div className="mt-auto pt-4 border-t border-slate-100 flex items-center text-brand-gold font-bold text-sm">
+                  <span>التفاصيل</span>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 rotate-180"><path d="m9 18 6-6-6-6"/></svg>
                 </div>
               </div>
-            </div>
+            </Link>
           </SwiperSlide>
         ))}
       </Swiper>
