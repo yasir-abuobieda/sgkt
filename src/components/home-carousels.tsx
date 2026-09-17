@@ -4,13 +4,28 @@ import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation, Pagination, Autoplay } from 'swiper/modules';
 import Link from 'next/link';
 import { JoinUsButton } from '@/components/registration-modal';
+import { useState, useEffect } from 'react';
+import { isEventPast } from '@/lib/utils';
 
 // Import Swiper styles
 import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
 
-export function EventsCarousel({ events }: { events: any[] }) {
+export function EventsCarousel({ events: initialEvents }: { events: any[] }) {
+  const [events, setEvents] = useState(initialEvents);
+
+  useEffect(() => {
+    setEvents(initialEvents);
+  }, [initialEvents]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setEvents(prev => prev.filter(event => !isEventPast(event.date)));
+    }, 60000);
+    return () => clearInterval(interval);
+  }, []);
+
   if (!events || events.length === 0) {
     return <div className="text-center text-slate-500 py-10">لا توجد فعاليات حالياً.</div>;
   }
