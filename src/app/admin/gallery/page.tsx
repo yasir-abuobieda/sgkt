@@ -23,6 +23,7 @@ export default function AdminGallery() {
     src: '',
     event_id: null as number | null
   });
+  const [multipleUrls, setMultipleUrls] = useState<string[]>([]);
   const [isUploading, setIsUploading] = useState(false);
 
   // Fetch from Supabase
@@ -57,9 +58,11 @@ export default function AdminGallery() {
     if (item) {
       setCurrentItem(item);
       setFormData(item);
+      setMultipleUrls([item.src]);
     } else {
       setCurrentItem(null);
       setFormData({ title: '', category: '', src: '', event_id: null });
+      setMultipleUrls([]);
     }
     setIsModalOpen(true);
   };
@@ -87,25 +90,8 @@ export default function AdminGallery() {
     }
 
     if (uploadedUrls.length > 0) {
-      if (uploadedUrls.length === 1) {
-        // Just fill the form URL and wait for the user to click Save
-        setFormData({ ...formData, src: uploadedUrls[0] });
-      } else {
-        // If multiple files, save them immediately
-        if (currentItem) {
-          // Edit mode: update the current item with the first image
-          await supabase.from('gallery').update({ src: uploadedUrls[0], event_id: formData.event_id }).eq('id', currentItem.id);
-          // Insert the rest as new
-          const newInserts = uploadedUrls.slice(1).map(url => ({ title: '', category: '', src: url, event_id: formData.event_id }));
-          await supabase.from('gallery').insert(newInserts);
-        } else {
-          // Add mode: insert all
-          const newInserts = uploadedUrls.map(url => ({ title: '', category: '', src: url, event_id: formData.event_id }));
-          await supabase.from('gallery').insert(newInserts);
-        }
-        fetchGallery();
-        setIsModalOpen(false);
-      }
+      setMultipleUrls(uploadedUrls);
+      setFormData({ ...formData, src: uploadedUrls[0] });
     }
     
     setIsUploading(false);
@@ -117,11 +103,25 @@ export default function AdminGallery() {
     if (currentItem) {
       // Edit in Supabase
       const { error } = await supabase.from('gallery').update(formData).eq('id', currentItem.id);
-      if (!error) fetchGallery();
+      if (error) {
+        alert("خطأ في الحفظ: " + error.message);
+        console.error(error);
+      } else {
+        fetchGallery();
+      }
     } else {
       // Add to Supabase
-      const { error } = await supabase.from('gallery').insert([formData]);
-      if (!error) fetchGallery();
+      const newInserts = multipleUrls.length > 0 
+        ? multipleUrls.map(url => ({ ...formData, src: url })) 
+        : [formData];
+        
+      const { error } = await supabase.from('gallery').insert(newInserts);
+      if (error) {
+        alert("خطأ في الإضافة: " + error.message);
+        console.error(error);
+      } else {
+        fetchGallery();
+      }
     }
     setIsModalOpen(false);
   };

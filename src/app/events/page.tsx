@@ -26,6 +26,16 @@ export default function EventsPage() {
       setIsLoading(false);
     };
     fetchEvents();
+    
+    // Auto-update status every minute without refreshing the page
+    const interval = setInterval(() => {
+      setEvents(prevEvents => prevEvents.map(event => ({
+        ...event,
+        dynamicStatus: isEventPast(event.date) ? 'past' : 'upcoming'
+      })));
+    }, 60000);
+    
+    return () => clearInterval(interval);
   }, []);
 
   const filteredEvents = events.filter(event => 
