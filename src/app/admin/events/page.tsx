@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
+import { isEventPast } from '@/lib/utils';
 
 export default function AdminEvents() {
   const [events, setEvents] = useState<any[]>([]);
@@ -39,7 +40,11 @@ export default function AdminEvents() {
     setIsLoading(true);
     const { data, error } = await supabase.from('events').select('*').order('created_at', { ascending: false });
     if (!error && data) {
-      setEvents(data);
+      const processed = data.map(ev => ({
+        ...ev,
+        dynamicStatus: isEventPast(ev.date) ? 'past' : 'upcoming'
+      }));
+      setEvents(processed);
     }
     
     // Fetch registration counts
@@ -62,7 +67,7 @@ export default function AdminEvents() {
     fetchEvents();
   }, []);
 
-  const filteredEvents = events.filter(ev => filter === 'all' ? true : ev.status === filter);
+  const filteredEvents = events.filter(ev => filter === 'all' ? true : ev.dynamicStatus === filter);
 
   // Handle open Add/Edit modal
   const openModal = (event: any = null) => {
@@ -324,8 +329,8 @@ export default function AdminEvents() {
                   </button>
                 </td>
                 <td className="p-4">
-                  <span className={`text-xs px-3 py-1 rounded-full font-bold ${event.status === 'upcoming' ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-600'}`}>
-                    {event.status === 'upcoming' ? 'قريباً' : 'منتهية'}
+                  <span className={`text-xs px-3 py-1 rounded-full font-bold ${event.dynamicStatus === 'upcoming' ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-600'}`}>
+                    {event.dynamicStatus === 'upcoming' ? 'قريباً (تلقائي)' : 'منتهية (تلقائي)'}
                   </span>
                 </td>
                 <td className="p-4">
@@ -378,14 +383,7 @@ export default function AdminEvents() {
                   <input required type="time" className="w-full px-4 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-brand-maroon focus:outline-none text-right" value={formData.time} onChange={e => setFormData({...formData, time: e.target.value})} />
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-bold text-slate-700 mb-1">الحالة</label>
-                  <select className="w-full px-4 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-brand-maroon focus:outline-none" value={formData.status} onChange={e => setFormData({...formData, status: e.target.value})}>
-                    <option value="upcoming">قريباً</option>
-                    <option value="past">منتهية</option>
-                  </select>
-                </div>
+              <div className="grid grid-cols-1 gap-4">
                 <div>
                   <label className="block text-sm font-bold text-slate-700 mb-1">صورة الفعالية</label>
                   <div className="flex gap-2">

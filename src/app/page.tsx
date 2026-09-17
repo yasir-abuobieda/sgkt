@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 import { JoinUsButton } from '@/components/registration-modal';
 import { EventsCarousel, NewsCarousel } from '@/components/home-carousels';
+import { isEventPast } from '@/lib/utils';
 
 // Revalidate this page instantly to always show fresh data
 export const revalidate = 0;
@@ -11,9 +12,12 @@ export default async function Home() {
   const { data: newsData } = await supabase.from('news').select('*').order('created_at', { ascending: false }).limit(5);
   const latestNews = newsData || [];
 
-  // Fetch upcoming 5 events
-  const { data: eventsData } = await supabase.from('events').select('*').eq('status', 'upcoming').order('created_at', { ascending: false }).limit(5);
-  const upcomingEvents = eventsData || [];
+  // Fetch all events to dynamically determine upcoming vs past
+  const { data: eventsData } = await supabase.from('events').select('*').order('created_at', { ascending: false });
+  const allEvents = eventsData || [];
+  
+  // Filter for upcoming events dynamically (limit to 5)
+  const upcomingEvents = allEvents.filter(event => !isEventPast(event.date)).slice(0, 5);
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'Organization',

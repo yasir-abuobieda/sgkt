@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { JoinUsButton } from '@/components/registration-modal';
 import { supabase } from '@/lib/supabase';
+import { isEventPast } from '@/lib/utils';
 
 export default function EventsPage() {
   const [filter, setFilter] = useState<'all' | 'upcoming' | 'past'>('all');
@@ -15,7 +16,12 @@ export default function EventsPage() {
       setIsLoading(true);
       const { data, error } = await supabase.from('events').select('*').order('created_at', { ascending: false });
       if (!error && data) {
-        setEvents(data);
+        // Map dynamic status
+        const processedEvents = data.map(event => ({
+          ...event,
+          dynamicStatus: isEventPast(event.date) ? 'past' : 'upcoming'
+        }));
+        setEvents(processedEvents);
       }
       setIsLoading(false);
     };
@@ -23,7 +29,7 @@ export default function EventsPage() {
   }, []);
 
   const filteredEvents = events.filter(event => 
-    filter === 'all' ? true : event.status === filter
+    filter === 'all' ? true : event.dynamicStatus === filter
   );
 
   return (
@@ -75,8 +81,8 @@ export default function EventsPage() {
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                   />
                   <div className="absolute top-4 right-4 z-10">
-                    <span className={`px-4 py-1.5 rounded-full text-xs font-bold text-white shadow-md ${event.status === 'upcoming' ? 'bg-brand-gold' : 'bg-slate-800'}`}>
-                      {event.status === 'upcoming' ? 'قريباً' : 'منتهية'}
+                    <span className={`px-4 py-1.5 rounded-full text-xs font-bold text-white shadow-md ${event.dynamicStatus === 'upcoming' ? 'bg-brand-gold' : 'bg-slate-800'}`}>
+                      {event.dynamicStatus === 'upcoming' ? 'قريباً' : 'منتهية'}
                     </span>
                   </div>
                 </div>
@@ -103,7 +109,7 @@ export default function EventsPage() {
 
                   <p className="text-slate-600 mb-6 flex-grow leading-relaxed">{event.description}</p>
                   
-                  {event.status === 'upcoming' ? (
+                  {event.dynamicStatus === 'upcoming' ? (
                     <div className="mt-auto w-full">
                       {/* Re-using the JoinUsButton component to trigger the registration modal */}
                       <div className="w-full [&>button]:w-full [&>button]:py-3">
