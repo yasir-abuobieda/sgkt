@@ -18,7 +18,8 @@ export function isEventPast(dateString: string) {
   }
   
   try {
-    const eventDate = new Date(`${datePart}T${timePart}:00`);
+    // Force parsing as GMT+03:00 (Turkey Time) to avoid server/client timezone mismatch
+    const eventDate = new Date(`${datePart}T${timePart}:00+03:00`);
     const now = new Date();
     return eventDate < now;
   } catch (e) {
