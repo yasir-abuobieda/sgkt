@@ -129,9 +129,10 @@ export default function AdminEvents() {
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Create a payload and remove the 'time' property
+    // Create a payload and remove properties not in the database schema
     const payload: any = { ...formData };
     delete payload.time;
+    delete payload.dynamicStatus;
     
     // Merge time into date string if time is provided
     if (formData.time) {
