@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabase';
 
 export default function AdminGallery() {
   const [images, setImages] = useState<any[]>([]);
+  const [events, setEvents] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   
   // Selection states
@@ -18,13 +19,20 @@ export default function AdminGallery() {
   const [formData, setFormData] = useState({
     title: '',
     category: '',
-    src: ''
+    src: '',
+    event_id: null as number | null
   });
   const [isUploading, setIsUploading] = useState(false);
 
   // Fetch from Supabase
   const fetchGallery = async () => {
     setIsLoading(true);
+    
+    // Fetch events for dropdown
+    const { data: eventsData } = await supabase.from('events').select('id, title').order('created_at', { ascending: false });
+    if (eventsData) setEvents(eventsData);
+    
+    // Fetch gallery images
     const { data, error } = await supabase.from('gallery').select('*').order('created_at', { ascending: false });
     if (!error && data) {
       setImages(data);
@@ -46,7 +54,7 @@ export default function AdminGallery() {
       setFormData(item);
     } else {
       setCurrentItem(null);
-      setFormData({ title: '', category: '', src: '' });
+      setFormData({ title: '', category: '', src: '', event_id: null });
     }
     setIsModalOpen(true);
   };
@@ -76,15 +84,15 @@ export default function AdminGallery() {
     if (uploadedUrls.length > 0) {
       if (currentItem) {
         // Edit mode: update the current item with the first image
-        await supabase.from('gallery').update({ src: uploadedUrls[0] }).eq('id', currentItem.id);
+        await supabase.from('gallery').update({ src: uploadedUrls[0], event_id: formData.event_id }).eq('id', currentItem.id);
         // If more than 1 uploaded, insert the rest as new
         if (uploadedUrls.length > 1) {
-          const newInserts = uploadedUrls.slice(1).map(url => ({ title: '', category: '', src: url }));
+          const newInserts = uploadedUrls.slice(1).map(url => ({ title: '', category: '', src: url, event_id: formData.event_id }));
           await supabase.from('gallery').insert(newInserts);
         }
       } else {
         // Add mode: insert all
-        const newInserts = uploadedUrls.map(url => ({ title: '', category: '', src: url }));
+        const newInserts = uploadedUrls.map(url => ({ title: '', category: '', src: url, event_id: formData.event_id }));
         await supabase.from('gallery').insert(newInserts);
       }
       fetchGallery();
@@ -195,6 +203,11 @@ export default function AdminGallery() {
               <img src={img.src} alt="صورة" className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
             </div>
             <div className="p-4 flex flex-col justify-between">
+              {img.event_id && (
+                <div className="mb-2 text-xs font-bold text-brand-gold bg-brand-gold/10 px-2 py-1 rounded inline-block truncate">
+                  تغطية: {events.find(e => e.id === img.event_id)?.title || 'فعالية'}
+                </div>
+              )}
               <div className="mt-4 flex gap-2">
                 <button onClick={() => openModal(img)} className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs py-2 rounded font-bold transition-colors">تعديل</button>
                 <button onClick={() => confirmDelete(img)} className="flex-1 bg-red-50 hover:bg-red-100 text-red-600 text-xs py-2 rounded font-bold transition-colors">حذف</button>
@@ -230,7 +243,21 @@ export default function AdminGallery() {
                     <input type="file" accept="image/*" multiple className="hidden" disabled={isUploading} onChange={handleImageUpload} />
                   </label>
                 </div>
+              </div>
 
+              <div>
+                <label className="block text-sm font-bold text-slate-700 mb-1">ربط الصورة بفعالية (اختياري)</label>
+                <select 
+                  className="w-full px-4 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-brand-maroon focus:outline-none" 
+                  value={formData.event_id || ''} 
+                  onChange={e => setFormData({...formData, event_id: e.target.value ? parseInt(e.target.value) : null})}
+                >
+                  <option value="">-- صورة عامة (بدون فعالية محددة) --</option>
+                  {events.map(event => (
+                    <option key={event.id} value={event.id}>{event.title}</option>
+                  ))}
+                </select>
+                <p className="text-xs text-slate-500 mt-1">عند اختيار فعالية، ستظهر هذه الصورة تلقائياً عندما يضغط الزائر على "عرض التغطية والصور" لتلك الفعالية.</p>
               </div>
               <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-slate-100">
                 <button type="button" onClick={() => setIsModalOpen(false)} className="px-6 py-2 rounded-lg font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors">إلغاء</button>

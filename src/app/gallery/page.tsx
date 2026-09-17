@@ -1,16 +1,30 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
+import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 
-export default function GalleryPage() {
+function GalleryContent() {
+  const searchParams = useSearchParams();
+  const eventIdParam = searchParams.get('event_id');
+  const eventId = eventIdParam ? parseInt(eventIdParam) : null;
+  
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [galleryImages, setGalleryImages] = useState<any[]>([]);
+  const [eventDetails, setEventDetails] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchGallery = async () => {
       setIsLoading(true);
+      
+      // If there's an eventId, fetch its details
+      if (eventId) {
+        const { data: eventData } = await supabase.from('events').select('title').eq('id', eventId).single();
+        if (eventData) setEventDetails(eventData);
+      }
+      
       const { data, error } = await supabase.from('gallery').select('*').order('created_at', { ascending: false });
       if (!error && data) {
         setGalleryImages(data);
@@ -18,9 +32,12 @@ export default function GalleryPage() {
       setIsLoading(false);
     };
     fetchGallery();
-  }, []);
+  }, [eventId]);
 
-  const filteredImages = galleryImages;
+  // Filter images by eventId if provided
+  const filteredImages = eventId 
+    ? galleryImages.filter(img => img.event_id === eventId)
+    : galleryImages;
 
   // Keyboard navigation
   useEffect(() => {
@@ -46,10 +63,23 @@ export default function GalleryPage() {
         
         {/* Header */}
         <div className="text-center mb-16">
-          <h1 className="text-4xl md:text-5xl font-bold text-brand-maroon mb-4">معرض الصور</h1>
-          <p className="text-lg text-slate-600 max-w-2xl mx-auto">
-            نافذة بصرية توثق أبرز محطاتنا، فعالياتنا، ومشاركات الشباب السوداني في تركيا.
-          </p>
+          {eventId && eventDetails ? (
+            <>
+              <h1 className="text-4xl md:text-5xl font-bold text-brand-maroon mb-4">تغطية فعالية</h1>
+              <h2 className="text-2xl font-bold text-brand-gold mb-6">{eventDetails.title}</h2>
+              <Link href="/gallery" className="inline-flex items-center justify-center gap-2 px-6 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded-full transition-colors mb-4">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg>
+                العودة للمعرض الشامل
+              </Link>
+            </>
+          ) : (
+            <>
+              <h1 className="text-4xl md:text-5xl font-bold text-brand-maroon mb-4">معرض الصور</h1>
+              <p className="text-lg text-slate-600 max-w-2xl mx-auto">
+                نافذة بصرية توثق أبرز محطاتنا، فعالياتنا، ومشاركات الشباب السوداني في تركيا.
+              </p>
+            </>
+          )}
         </div>
 
 
@@ -139,5 +169,17 @@ export default function GalleryPage() {
       )}
 
     </div>
+  );
+}
+
+export default function GalleryPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+        <svg className="animate-spin h-10 w-10 text-brand-maroon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+      </div>
+    }>
+      <GalleryContent />
+    </Suspense>
   );
 }

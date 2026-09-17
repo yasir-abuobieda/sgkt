@@ -117,7 +117,7 @@ export default function EventsPage() {
                       </div>
                     </div>
                   ) : (
-                    <Link href="/gallery" className="mt-auto bg-slate-100 text-slate-500 px-5 py-3 rounded-lg text-sm font-bold w-full text-center hover:bg-slate-200 transition block">
+                    <Link href={`/gallery?event_id=${event.id}`} className="mt-auto bg-slate-100 text-slate-500 px-5 py-3 rounded-lg text-sm font-bold w-full text-center hover:bg-slate-200 transition block">
                       عرض التغطية والصور
                     </Link>
                   )}
