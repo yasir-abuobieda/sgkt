@@ -66,13 +66,13 @@ export default function AdminEvents() {
   useEffect(() => {
     fetchEvents();
     
-    // Auto-update status every minute
+    // Auto-update status every 5 seconds
     const interval = setInterval(() => {
       setEvents(prevEvents => prevEvents.map(event => ({
         ...event,
         dynamicStatus: isEventPast(event.date) ? 'past' : 'upcoming'
       })));
-    }, 60000);
+    }, 5000);
     
     return () => clearInterval(interval);
   }, []);

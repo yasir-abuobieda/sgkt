@@ -22,7 +22,7 @@ export function EventsCarousel({ events: initialEvents }: { events: any[] }) {
   useEffect(() => {
     const interval = setInterval(() => {
       setEvents(prev => prev.filter(event => !isEventPast(event.date)));
-    }, 60000);
+    }, 5000);
     return () => clearInterval(interval);
   }, []);
 
