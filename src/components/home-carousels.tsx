@@ -37,7 +37,7 @@ export function EventsCarousel({ events }: { events: any[] }) {
           const isPast = isEventPast(event.date);
           return (
           <SwiperSlide key={event.id} className="h-auto">
-            <Link href={`/events/${event.id}`} className="bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-100 hover:shadow-xl transition-all group flex flex-col h-full cursor-pointer block">
+            <div className="bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-100 hover:shadow-xl transition-all group flex flex-col h-full cursor-pointer block">
               <div className="relative h-56 w-full overflow-hidden bg-slate-200 shrink-0">
                 <img src={event.image} alt={event.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                 <div className="absolute top-4 right-4">
@@ -69,12 +69,19 @@ export function EventsCarousel({ events }: { events: any[] }) {
                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-brand-gold"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
                   <span>{event.location}</span>
                 </div>
-                <div className="mt-auto pt-4 border-t border-slate-100 flex items-center text-brand-gold font-bold text-sm">
-                  <span>التفاصيل</span>
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 rotate-180"><path d="m9 18 6-6-6-6"/></svg>
+                <div className="mt-auto pt-4 border-t border-slate-100 w-full">
+                  {isPast ? (
+                    <Link href={`/gallery?event_id=${event.id}`} className="bg-slate-100 text-slate-500 px-5 py-3 rounded-lg text-sm font-bold w-full text-center hover:bg-slate-200 transition block">
+                      عرض التغطية والصور
+                    </Link>
+                  ) : (
+                    <div className="w-full [&>button]:w-full [&>button]:py-3">
+                      <JoinUsButton preselectedEventId={event.id.toString()} preselectedEventTitle={event.title} />
+                    </div>
+                  )}
                 </div>
               </div>
-            </Link>
+            </div>
           </SwiperSlide>
           );
         })}
