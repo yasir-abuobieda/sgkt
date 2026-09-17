@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
+import { isEventPast } from '@/lib/utils';
 
 export default function AdminGallery() {
   const [images, setImages] = useState<any[]>([]);
@@ -28,9 +29,13 @@ export default function AdminGallery() {
   const fetchGallery = async () => {
     setIsLoading(true);
     
-    // Fetch events for dropdown
-    const { data: eventsData } = await supabase.from('events').select('id, title').order('created_at', { ascending: false });
-    if (eventsData) setEvents(eventsData);
+    // Fetch events for dropdown (need date to determine if past)
+    const { data: eventsData } = await supabase.from('events').select('id, title, date').order('created_at', { ascending: false });
+    if (eventsData) {
+      // Only show past events in the dropdown since photos are for completed events
+      const pastEvents = eventsData.filter(event => isEventPast(event.date));
+      setEvents(pastEvents);
+    }
     
     // Fetch gallery images
     const { data, error } = await supabase.from('gallery').select('*').order('created_at', { ascending: false });
