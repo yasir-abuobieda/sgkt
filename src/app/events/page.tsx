@@ -10,8 +10,6 @@ export default function EventsPage() {
   const [events, setEvents] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
-
   useEffect(() => {
     const fetchEvents = async () => {
       setIsLoading(true);
@@ -27,24 +25,6 @@ export default function EventsPage() {
   const filteredEvents = events.filter(event => 
     filter === 'all' ? true : event.status === filter
   );
-
-  // Keyboard navigation
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (selectedIndex === null) return;
-      if (e.key === 'ArrowRight') {
-        // User requested: right arrow goes to next image
-        setSelectedIndex(prev => prev !== null && prev < filteredEvents.length - 1 ? prev + 1 : 0);
-      } else if (e.key === 'ArrowLeft') {
-        // User requested: left arrow goes to previous image
-        setSelectedIndex(prev => prev !== null && prev > 0 ? prev - 1 : filteredEvents.length - 1);
-      } else if (e.key === 'Escape') {
-        setSelectedIndex(null);
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [selectedIndex, filteredEvents.length]);
 
   return (
     <div className="py-20 px-4 bg-slate-50 min-h-screen relative">
@@ -87,21 +67,13 @@ export default function EventsPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {filteredEvents.map((event, index) => (
               <div key={event.id} className="bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-100 hover:shadow-xl transition-all group flex flex-col">
-                <div 
-                  className="relative h-60 w-full overflow-hidden bg-slate-200 cursor-pointer"
-                  onClick={() => setSelectedIndex(index)}
-                >
+                <div className="relative h-60 w-full overflow-hidden bg-slate-200">
                   {/* Using standard img tag instead of Next Image to avoid requiring a server restart for Unsplash domain config */}
                   <img 
                     src={event.image} 
                     alt={event.title} 
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                   />
-                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-white opacity-90" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
-                    </svg>
-                  </div>
                   <div className="absolute top-4 right-4 z-10">
                     <span className={`px-4 py-1.5 rounded-full text-xs font-bold text-white shadow-md ${event.status === 'upcoming' ? 'bg-brand-gold' : 'bg-slate-800'}`}>
                       {event.status === 'upcoming' ? 'قريباً' : 'منتهية'}
@@ -155,59 +127,6 @@ export default function EventsPage() {
           </div>
         )}
       </div>
-
-      {/* Lightbox Modal */}
-      {selectedIndex !== null && (
-        <div 
-          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/95 backdrop-blur-sm p-4"
-          onClick={() => setSelectedIndex(null)}
-          dir="rtl"
-        >
-          {/* Close button */}
-          <button 
-            className="absolute top-6 left-6 md:right-6 md:left-auto text-white/70 hover:text-white bg-slate-800/50 hover:bg-brand-maroon rounded-full p-2 transition-colors z-[60]"
-            onClick={(e) => { e.stopPropagation(); setSelectedIndex(null); }}
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-          </button>
-
-          {/* Right Arrow (Next Image) */}
-          <button 
-            className="absolute right-4 md:right-10 top-1/2 -translate-y-1/2 text-white/70 hover:text-white bg-slate-800/50 hover:bg-brand-maroon rounded-full p-3 transition-colors z-[60]"
-            onClick={(e) => { 
-              e.stopPropagation(); 
-              setSelectedIndex(prev => prev !== null && prev < filteredEvents.length - 1 ? prev + 1 : 0); 
-            }}
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>
-          </button>
-
-          {/* Left Arrow (Previous Image) */}
-          <button 
-            className="absolute left-4 md:left-10 top-1/2 -translate-y-1/2 text-white/70 hover:text-white bg-slate-800/50 hover:bg-brand-maroon rounded-full p-3 transition-colors z-[60]"
-            onClick={(e) => { 
-              e.stopPropagation(); 
-              setSelectedIndex(prev => prev !== null && prev > 0 ? prev - 1 : filteredEvents.length - 1); 
-            }}
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
-          </button>
-          
-          <div 
-            className="max-w-5xl w-full max-h-[85vh] relative flex flex-col items-center animate-in fade-in zoom-in duration-300"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <img 
-              src={filteredEvents[selectedIndex].image} 
-              alt={filteredEvents[selectedIndex].title} 
-              className="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl"
-            />
-            <div className="absolute -bottom-10 text-white/60 font-medium tracking-wider">
-              {selectedIndex + 1} / {filteredEvents.length}
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
