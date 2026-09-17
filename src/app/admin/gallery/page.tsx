@@ -82,21 +82,25 @@ export default function AdminGallery() {
     }
 
     if (uploadedUrls.length > 0) {
-      if (currentItem) {
-        // Edit mode: update the current item with the first image
-        await supabase.from('gallery').update({ src: uploadedUrls[0], event_id: formData.event_id }).eq('id', currentItem.id);
-        // If more than 1 uploaded, insert the rest as new
-        if (uploadedUrls.length > 1) {
+      if (uploadedUrls.length === 1) {
+        // Just fill the form URL and wait for the user to click Save
+        setFormData({ ...formData, src: uploadedUrls[0] });
+      } else {
+        // If multiple files, save them immediately
+        if (currentItem) {
+          // Edit mode: update the current item with the first image
+          await supabase.from('gallery').update({ src: uploadedUrls[0], event_id: formData.event_id }).eq('id', currentItem.id);
+          // Insert the rest as new
           const newInserts = uploadedUrls.slice(1).map(url => ({ title: '', category: '', src: url, event_id: formData.event_id }));
           await supabase.from('gallery').insert(newInserts);
+        } else {
+          // Add mode: insert all
+          const newInserts = uploadedUrls.map(url => ({ title: '', category: '', src: url, event_id: formData.event_id }));
+          await supabase.from('gallery').insert(newInserts);
         }
-      } else {
-        // Add mode: insert all
-        const newInserts = uploadedUrls.map(url => ({ title: '', category: '', src: url, event_id: formData.event_id }));
-        await supabase.from('gallery').insert(newInserts);
+        fetchGallery();
+        setIsModalOpen(false);
       }
-      fetchGallery();
-      setIsModalOpen(false);
     }
     
     setIsUploading(false);
