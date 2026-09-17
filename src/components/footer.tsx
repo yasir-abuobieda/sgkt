@@ -19,7 +19,7 @@ export function Footer() {
               <a href="https://www.instagram.com/sgk.tr" target="_blank" rel="noreferrer" className="w-11 h-11 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-brand-gold hover:text-white transition-all hover:scale-110 shadow-sm border border-white/5">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="20" x="2" y="2" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/></svg>
               </a>
-              <a href="mailto:sudangenclikkonseyi.tr@gmail.com" className="w-11 h-11 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-brand-gold hover:text-white transition-all hover:scale-110 shadow-sm border border-white/5">
+              <a href="mailto:info@sgkturkiye.org" className="w-11 h-11 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-brand-gold hover:text-white transition-all hover:scale-110 shadow-sm border border-white/5">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
               </a>
             </div>
@@ -51,7 +51,7 @@ export function Footer() {
                 <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center shrink-0 text-brand-gold">
                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
                 </div>
-                <span dir="ltr" className="text-sm">sudangenclikkonseyi.tr@gmail.com</span>
+                <span dir="ltr" className="text-sm">info@sgkturkiye.org</span>
               </li>
             </ul>
           </div>

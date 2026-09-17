@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
+import { clearCache } from '@/app/actions';
 
 export default function AdminExecutiveOffice() {
   const [members, setMembers] = useState<any[]>([]);
@@ -75,11 +76,17 @@ export default function AdminExecutiveOffice() {
     if (currentMember) {
       // Edit in Supabase
       const { error } = await supabase.from('executive_office').update(formData).eq('id', currentMember.id);
-      if (!error) fetchMembers();
+      if (!error) {
+        await clearCache();
+        fetchMembers();
+      }
     } else {
       // Add to Supabase
       const { error } = await supabase.from('executive_office').insert([formData]);
-      if (!error) fetchMembers();
+      if (!error) {
+        await clearCache();
+        fetchMembers();
+      }
     }
     setIsModalOpen(false);
   };
@@ -93,6 +100,7 @@ export default function AdminExecutiveOffice() {
   const handleDelete = async () => {
     if (currentMember) {
       await supabase.from('executive_office').delete().eq('id', currentMember.id);
+      await clearCache();
       fetchMembers();
     }
     setIsDeleteModalOpen(false);

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
+import { clearCache } from '@/app/actions';
 
 export default function AdminNews() {
   const [news, setNews] = useState<any[]>([]);
@@ -93,7 +94,10 @@ export default function AdminNews() {
       // Edit in Supabase (preserve existing slug)
       const { error } = await supabase.from('news').update(formData).eq('id', currentItem.id);
       if (error) alert('خطأ في التعديل: ' + error.message);
-      else fetchNews();
+      else {
+        await clearCache();
+        fetchNews();
+      }
     } else {
       // Add to Supabase
       const baseSlug = formData.title.trim().replace(/\s+/g, '-').toLowerCase();
@@ -101,7 +105,10 @@ export default function AdminNews() {
       
       const { error } = await supabase.from('news').insert([{ ...formData, slug: uniqueSlug }]);
       if (error) alert('خطأ في الإضافة: ' + error.message);
-      else fetchNews();
+      else {
+        await clearCache();
+        fetchNews();
+      }
     }
     setIsModalOpen(false);
   };
@@ -137,6 +144,7 @@ export default function AdminNews() {
       // Bulk delete
       await supabase.from('news').delete().in('id', selectedIds);
     }
+    await clearCache();
     fetchNews();
     setIsDeleteModalOpen(false);
   };

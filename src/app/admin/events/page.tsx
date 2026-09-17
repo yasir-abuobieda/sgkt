@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { isEventPast } from '@/lib/utils';
+import { clearCache } from '@/app/actions';
 
 export default function AdminEvents() {
   const [events, setEvents] = useState<any[]>([]);
@@ -145,6 +146,7 @@ export default function AdminEvents() {
       if (error) {
         alert('خطأ في التعديل: ' + error.message);
       } else {
+        await clearCache();
         fetchEvents();
         setIsModalOpen(false);
       }
@@ -154,6 +156,7 @@ export default function AdminEvents() {
       if (error) {
         alert('خطأ في الإضافة: ' + error.message);
       } else {
+        await clearCache();
         fetchEvents();
         setIsModalOpen(false);
       }
@@ -191,6 +194,7 @@ export default function AdminEvents() {
       // Bulk delete
       await supabase.from('events').delete().in('id', selectedIds);
     }
+    await clearCache();
     fetchEvents();
     setIsDeleteModalOpen(false);
   };

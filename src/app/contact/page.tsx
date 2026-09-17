@@ -73,7 +73,7 @@ export default function ContactPage() {
                 </div>
                 <div>
                   <p className="font-bold text-slate-800 mb-1">البريد الإلكتروني</p>
-                  <p>sudangenclikkonseyi.tr@gmail.com</p>
+                  <p>info@sgkturkiye.org</p>
                 </div>
               </div>
 
