@@ -13,6 +13,25 @@ import 'swiper/css/navigation';
 import 'swiper/css/pagination';
 
 export function EventsCarousel({ events }: { events: any[] }) {
+  const [dir, setDir] = useState('rtl');
+
+  useEffect(() => {
+    // Check initial dir
+    setDir(document.documentElement.dir || 'rtl');
+    
+    // Watch for changes on the html tag's dir attribute
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.attributeName === 'dir') {
+          setDir(document.documentElement.dir || 'rtl');
+        }
+      });
+    });
+    
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['dir'] });
+    return () => observer.disconnect();
+  }, []);
+
   if (!events || events.length === 0) {
     return <div className="text-center text-slate-500 py-10">لا توجد فعاليات حالياً.</div>;
   }
@@ -30,7 +49,8 @@ export function EventsCarousel({ events }: { events: any[] }) {
           768: { slidesPerView: 2 },
           1024: { slidesPerView: 3 },
         }}
-        dir="rtl"
+        dir={dir}
+        key={dir} // Force re-render when dir changes to fix Swiper internal calculations
         className="pb-12"
       >
         {events.map((event) => {
@@ -92,6 +112,21 @@ export function EventsCarousel({ events }: { events: any[] }) {
 }
 
 export function NewsCarousel({ news }: { news: any[] }) {
+  const [dir, setDir] = useState('rtl');
+
+  useEffect(() => {
+    setDir(document.documentElement.dir || 'rtl');
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.attributeName === 'dir') {
+          setDir(document.documentElement.dir || 'rtl');
+        }
+      });
+    });
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['dir'] });
+    return () => observer.disconnect();
+  }, []);
+
   if (!news || news.length === 0) {
     return <div className="text-center text-slate-500 py-10">لا توجد أخبار حالياً.</div>;
   }
@@ -109,7 +144,8 @@ export function NewsCarousel({ news }: { news: any[] }) {
           768: { slidesPerView: 2 },
           1024: { slidesPerView: 3 },
         }}
-        dir="rtl"
+        dir={dir}
+        key={dir} // Force re-render when dir changes
         className="pb-12"
       >
         {news.map((item) => (

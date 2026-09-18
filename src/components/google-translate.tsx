@@ -52,6 +52,16 @@ export function GoogleTranslate() {
     });
     observer.observe(document.body, { childList: true, attributes: true, attributeFilter: ['style'] });
 
+    // Watch HTML lang attribute to dynamically update RTL/LTR direction
+    const htmlObserver = new MutationObserver(() => {
+      const lang = document.documentElement.lang;
+      const newDir = (lang === 'en' || lang === 'tr') ? 'ltr' : 'rtl';
+      if (document.documentElement.dir !== newDir) {
+        document.documentElement.dir = newDir;
+      }
+    });
+    htmlObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['lang'] });
+
     // 2. Define the init function for Google Translate
     window.googleTranslateElementInit = function () {
       try {
@@ -82,6 +92,7 @@ export function GoogleTranslate() {
     return () => {
       clearInterval(interval);
       observer.disconnect();
+      htmlObserver.disconnect();
     };
   }, []);
 
