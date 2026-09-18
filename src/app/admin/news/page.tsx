@@ -177,8 +177,64 @@ export default function AdminNews() {
         </div>
       </div>
 
-      {/* Table */}
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+      {/* Mobile Card View (hidden on lg and up) */}
+      <div className="lg:hidden space-y-4">
+        {/* Select All Checkbox for Mobile */}
+        {filteredNews.length > 0 && (
+          <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex items-center gap-3">
+            <input 
+              type="checkbox" 
+              className="w-4 h-4 rounded border-slate-300 text-brand-maroon focus:ring-brand-maroon cursor-pointer"
+              checked={selectedIds.length === filteredNews.length && filteredNews.length > 0}
+              onChange={toggleSelectAll}
+            />
+            <span className="text-sm font-bold text-slate-700">تحديد الكل</span>
+          </div>
+        )}
+
+        {isLoading ? (
+          <div className="p-8 text-center text-slate-500 bg-white rounded-xl border border-slate-200 flex justify-center gap-2">
+            <svg className="animate-spin h-5 w-5 text-brand-maroon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+            <span>جاري التحميل...</span>
+          </div>
+        ) : filteredNews.map((item) => (
+          <div key={item.id} className={`bg-white rounded-xl shadow-sm border ${selectedIds.includes(item.id) ? 'border-brand-maroon ring-1 ring-brand-maroon/20' : 'border-slate-200'} p-4 flex flex-col gap-4`}>
+            {/* Top row: Checkbox, Image, Title */}
+            <div className="flex items-start gap-3">
+              <input 
+                type="checkbox" 
+                className="w-4 h-4 mt-1 rounded border-slate-300 text-brand-maroon focus:ring-brand-maroon cursor-pointer"
+                checked={selectedIds.includes(item.id)}
+                onChange={() => toggleSelect(item.id)}
+              />
+              <div className="w-20 h-14 shrink-0 rounded bg-slate-200 overflow-hidden">
+                <img src={item.image} alt={item.title} className="w-full h-full object-cover" />
+              </div>
+              <h3 className="font-bold text-slate-800 text-sm leading-relaxed">{item.title}</h3>
+            </div>
+            {/* Bottom row: Date, Actions */}
+            <div className="flex items-center justify-between pt-3 border-t border-slate-100">
+              <div className="text-xs font-bold text-slate-500 bg-slate-100 px-3 py-1.5 rounded-lg">
+                {item.date}
+              </div>
+              <div className="flex items-center gap-1">
+                <button onClick={() => openModal(item)} className="p-2 text-slate-500 hover:bg-slate-100 hover:text-slate-800 rounded-lg transition-colors" title="تعديل">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+                </button>
+                <button onClick={() => confirmDelete(item)} className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="حذف">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        ))}
+        {!isLoading && filteredNews.length === 0 && (
+          <div className="p-8 text-center text-slate-500 bg-white rounded-xl border border-slate-200">لا توجد أخبار مسجلة في هذا القسم.</div>
+        )}
+      </div>
+
+      {/* Desktop Table View (hidden on mobile) */}
+      <div className="hidden lg:block bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full min-w-[800px] text-right">
             <thead className="bg-slate-50 border-b border-slate-200 text-slate-600 font-bold text-sm">
