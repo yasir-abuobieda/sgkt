@@ -41,19 +41,19 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       {/* Mobile menu overlay */}
       {isMobileMenuOpen && (
         <div 
-          className="fixed inset-0 bg-black/50 z-20 md:hidden" 
+          className="fixed inset-0 bg-black/50 z-20 lg:hidden" 
           onClick={() => setIsMobileMenuOpen(false)}
         />
       )}
 
       {/* Sidebar */}
-      <aside className={`fixed md:relative w-64 h-full bg-slate-900 text-white flex flex-col shadow-xl z-30 transition-transform duration-300 md:translate-x-0 right-0 ${isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+      <aside className={`fixed lg:relative w-64 h-full bg-slate-900 text-white flex flex-col shadow-xl z-30 transition-transform duration-300 lg:translate-x-0 right-0 ${isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'}`}>
         <div className="p-6 border-b border-slate-800 flex justify-between items-center">
           <div>
             <h2 className="text-xl font-bold text-brand-gold">لوحة التحكم</h2>
             <p className="text-xs text-slate-400 mt-1">مجلس الشباب السوداني</p>
           </div>
-          <button className="md:hidden text-slate-400 hover:text-white" onClick={() => setIsMobileMenuOpen(false)}>
+          <button className="lg:hidden text-slate-400 hover:text-white" onClick={() => setIsMobileMenuOpen(false)}>
             <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
@@ -108,7 +108,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <header className="h-16 bg-white shadow-sm border-b border-slate-200 flex items-center justify-between px-4 md:px-8 z-10 shrink-0">
           <div className="flex items-center gap-3">
             <button 
-              className="md:hidden p-2 -mr-2 text-slate-600 hover:bg-slate-100 rounded-lg"
+              className="lg:hidden p-2 -mr-2 text-slate-600 hover:bg-slate-100 rounded-lg"
               onClick={() => setIsMobileMenuOpen(true)}
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">

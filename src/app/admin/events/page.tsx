@@ -302,10 +302,10 @@ export default function AdminEvents() {
                   onChange={toggleSelectAll}
                 />
               </th>
-              <th className="p-4">صورة الفعالية</th>
+              <th className="p-4 hidden sm:table-cell">صورة الفعالية</th>
               <th className="p-4">عنوان الفعالية</th>
               <th className="p-4 text-center">المسجلين</th>
-              <th className="p-4">الحالة</th>
+              <th className="p-4 hidden md:table-cell">الحالة</th>
               <th className="p-4 text-center">الإجراءات</th>
             </tr>
           </thead>
@@ -329,7 +329,7 @@ export default function AdminEvents() {
                     onChange={() => toggleSelect(event.id)}
                   />
                 </td>
-                <td className="p-4">
+                <td className="p-4 hidden sm:table-cell">
                   <div className="w-16 h-12 rounded bg-slate-200 overflow-hidden">
                     <img src={event.image} alt={event.title} className="w-full h-full object-cover" />
                   </div>
@@ -344,7 +344,7 @@ export default function AdminEvents() {
                     {registrationCounts[event.id] || 0}
                   </button>
                 </td>
-                <td className="p-4">
+                <td className="p-4 hidden md:table-cell">
                   <span className={`text-xs px-3 py-1 rounded-full font-bold ${event.dynamicStatus === 'upcoming' ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-600'}`}>
                     {event.dynamicStatus === 'upcoming' ? 'قريباً' : 'منتهية'}
                   </span>
