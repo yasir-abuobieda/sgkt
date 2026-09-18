@@ -179,8 +179,9 @@ export default function AdminNews() {
 
       {/* Table */}
       <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-        <table className="w-full text-right">
-          <thead className="bg-slate-50 border-b border-slate-200 text-slate-600 font-bold text-sm">
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[800px] text-right">
+            <thead className="bg-slate-50 border-b border-slate-200 text-slate-600 font-bold text-sm">
             <tr>
               <th className="p-4 w-12 text-center">
                 <input 
@@ -242,6 +243,7 @@ export default function AdminNews() {
             )}
           </tbody>
         </table>
+        </div>
       </div>
 
       {/* Add/Edit Modal */}

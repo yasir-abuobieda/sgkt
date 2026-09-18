@@ -290,8 +290,9 @@ export default function AdminEvents() {
 
       {/* Table */}
       <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-        <table className="w-full text-right">
-          <thead className="bg-slate-50 border-b border-slate-200 text-slate-600 font-bold text-sm">
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[800px] text-right">
+            <thead className="bg-slate-50 border-b border-slate-200 text-slate-600 font-bold text-sm">
             <tr>
               <th className="p-4 w-12 text-center">
                 <input 
@@ -367,6 +368,7 @@ export default function AdminEvents() {
             )}
           </tbody>
         </table>
+        </div>
       </div>
 
       {/* Add/Edit Modal */}
@@ -459,8 +461,8 @@ export default function AdminEvents() {
               </button>
             </div>
             
-            <div className="flex-1 overflow-auto p-0">
-              <table className="w-full text-right text-sm">
+            <div className="flex-1 overflow-x-auto p-0">
+              <table className="w-full min-w-[600px] text-right text-sm">
                 <thead className="bg-slate-100 border-b border-slate-200 text-slate-600 font-bold sticky top-0">
                   <tr>
                     <th className="p-4">الاسم</th>
