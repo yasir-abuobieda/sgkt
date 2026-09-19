@@ -3,7 +3,6 @@
 import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import Image from 'next/image';
 import { supabase } from '@/lib/supabase';
 
 function GalleryContent() {
@@ -103,11 +102,10 @@ function GalleryContent() {
                 className="group relative h-72 rounded-2xl overflow-hidden cursor-pointer shadow-sm hover:shadow-xl transition-all duration-300"
                 onClick={() => setSelectedIndex(index)}
               >
-                <Image 
+                <img 
                   src={img.src} 
                   alt="صورة في المعرض" 
-                  fill
-                  className="object-cover transition-transform duration-700 group-hover:scale-110" 
+                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
                 />
                 {/* Overlay for hover effect */}
                 <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
