@@ -58,7 +58,7 @@ export function EventsCarousel({ events }: { events: any[] }) {
           return (
           <SwiperSlide key={event.id} className="h-auto">
             <div className="bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-100 hover:shadow-xl transition-all group flex flex-col h-full cursor-pointer block">
-              <div className="relative h-56 w-full overflow-hidden bg-slate-200 shrink-0">
+              <div className="relative w-full aspect-[5/6] overflow-hidden bg-slate-200 shrink-0">
                 <img src={event.image} alt={event.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                 <div className="absolute top-4 right-4">
                   {isPast ? (
@@ -151,7 +151,7 @@ export function NewsCarousel({ news }: { news: any[] }) {
         {news.map((item) => (
           <SwiperSlide key={item.id} className="h-auto">
             <Link href={`/news/${item.slug}`} className="bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-100 hover:shadow-xl transition-all group flex flex-col h-full cursor-pointer block">
-              <div className="relative h-56 w-full overflow-hidden bg-slate-200 shrink-0">
+              <div className="relative w-full aspect-[5/6] overflow-hidden bg-slate-200 shrink-0">
                 <img src={item.image} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                 <div className="absolute top-4 right-4">
                   <span className="bg-white/90 backdrop-blur text-brand-maroon px-3 py-1 rounded-full text-xs font-bold shadow-sm">

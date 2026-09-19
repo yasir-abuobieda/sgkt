@@ -83,7 +83,7 @@ export default function EventsPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {filteredEvents.map((event, index) => (
               <div key={event.id} className="bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-100 hover:shadow-xl transition-all group flex flex-col">
-                <div className="relative h-60 w-full overflow-hidden bg-slate-200">
+                <div className="relative w-full aspect-[5/6] overflow-hidden bg-slate-200">
                   {/* Using standard img tag instead of Next Image to avoid requiring a server restart for Unsplash domain config */}
                   <img 
                     src={event.image} 
