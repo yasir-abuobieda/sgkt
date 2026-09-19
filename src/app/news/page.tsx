@@ -39,7 +39,7 @@ export default function NewsPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {news.map(news => (
               <Link href={`/news/${news.slug}`} key={news.id} className="bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-100 hover:shadow-xl transition-all group flex flex-col cursor-pointer block">
-                <div className="relative w-full aspect-[5/6] overflow-hidden bg-slate-200">
+                <div className="relative h-56 w-full overflow-hidden bg-slate-200">
                     <img 
                       src={news.image} 
                       alt={news.title} 
