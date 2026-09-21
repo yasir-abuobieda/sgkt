@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { supabase } from '@/lib/supabase';
 
 export default function NewsPage() {
@@ -40,10 +41,12 @@ export default function NewsPage() {
             {news.map(news => (
               <Link href={`/news/${news.slug}`} key={news.id} className="bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-100 hover:shadow-xl transition-all group flex flex-col cursor-pointer block">
                 <div className="relative h-56 w-full overflow-hidden bg-slate-200">
-                    <img 
+                    <Image 
                       src={news.image} 
                       alt={news.title} 
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      fill
+                      sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                      className="object-cover group-hover:scale-105 transition-transform duration-500"
                     />
                   </div>
                 
