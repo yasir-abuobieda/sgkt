@@ -8,7 +8,7 @@ export function Footer() {
           
           {/* Brand & About */}
           <div className="md:col-span-2">
-            <h3 className="text-3xl font-extrabold text-white mb-6">مجلس الشباب السوداني</h3>
+            <h3 className="text-3xl font-extrabold text-white mb-6">مجلس الشباب السوداني - تركيا</h3>
             <p className="text-white/80 leading-loose mb-8 max-w-sm">
               مؤسسة شبابية رائدة تهدف إلى جمع الكفاءات والطاقات السودانية الشابة لتعزيز التواصل وتقديم مبادرات تخدم المجتمع.
             </p>
@@ -60,7 +60,7 @@ export function Footer() {
 
         {/* Copyrights */}
         <div className="border-t border-white/10 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-sm font-medium text-white/60">
-          <p>جميع الحقوق محفوظة &copy; {new Date().getFullYear()} لمجلس الشباب السوداني.</p>
+          <p>جميع الحقوق محفوظة &copy; {new Date().getFullYear()} لمجلس الشباب السوداني - تركيا.</p>
           <p>تم التطوير بواسطة <a href="https://www.linkedin.com/in/yasir-abuobieda-mohammed-fadlalla-4844a9418/" target="_blank" rel="noreferrer" className="text-brand-gold font-bold hover:text-white transition-colors">YASIR ABUOBIEDA</a></p>
         </div>
       </div>

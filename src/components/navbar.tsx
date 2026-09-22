@@ -89,7 +89,7 @@ export function Navbar({ initialLang = 'ar' }: { initialLang?: string }) {
           <Link href="/" className="flex items-center hover:opacity-90 transition shrink-0">
             <Image 
               src={activeLogo} 
-              alt="مجلس الشباب السوداني" 
+              alt="مجلس الشباب السوداني - تركيا" 
               className="h-16 md:h-20 w-auto object-contain" 
               priority 
             />

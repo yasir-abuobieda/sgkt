@@ -36,8 +36,9 @@ export default async function Home() {
       {/* Hero Section */}
       <section className="bg-gradient-to-b from-brand-maroon/5 to-white py-24 px-4 border-b border-brand-maroon/10">
         <div className="container mx-auto max-w-5xl text-center">
-          <h1 className="text-5xl md:text-6xl font-extrabold text-brand-maroon mb-4 leading-relaxed">
-            مجلس الشباب السوداني في تركيا
+          <h1 className="text-4xl md:text-5xl lg:text-7xl font-extrabold text-brand-maroon leading-tight mb-8 drop-shadow-sm notranslate flex flex-col gap-4">
+            <span>مجلس الشباب السوداني - تركيا</span>
+            <span className="text-2xl md:text-3xl lg:text-4xl font-bold text-brand-maroon/90">Sudan Gençlik Konseyi - Türkiye</span>
           </h1>
           <h2 className="text-2xl md:text-3xl font-bold text-brand-gold mb-8 tracking-wide">
             Türkiye Sudan Gençlik Konseyi | SGKT

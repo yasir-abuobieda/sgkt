@@ -9,8 +9,8 @@ import { cookies } from 'next/headers';
 const cairo = Cairo({ subsets: ["arabic", "latin"] });
 
 const SITE_URL = 'https://sgkturkiye.org';
-const SITE_NAME = 'مجلس الشباب السوداني بتركيا | Sudan Gençlik Konseyi';
-const SITE_DESC = 'المنصة الرسمية لمجلس الشباب السوداني بتركيا - Sudan Gençlik Konseyi (SGK). هيئة شبابية وطنية مستقلة تمثل الإطار الجامع للشباب السوداني في تركيا، وتهدف إلى خلق مساحات شبابية وتطوير قدرات الشباب السوداني.';
+const SITE_NAME = 'مجلس الشباب السوداني - تركيا | Sudan Gençlik Konseyi - Türkiye';
+const SITE_DESC = 'المنصة الرسمية لمجلس الشباب السوداني - تركيا (Sudan Gençlik Konseyi - Türkiye). هيئة شبابية وطنية مستقلة تمثل الإطار الجامع للشباب السوداني في تركيا، وتهدف إلى خلق مساحات شبابية وتطوير قدرات الشباب السوداني.';
 const OG_IMAGE = `${SITE_URL}/og-image.jpg`;
 
 export const metadata: Metadata = {
@@ -21,8 +21,8 @@ export const metadata: Metadata = {
   },
   description: SITE_DESC,
   keywords: ['مجلس الشباب السوداني', 'مجلس الشباب السوداني تركيا', 'Sudan gençlik', 'Sudan gençlik konseyi', 'مساحات شبابية', 'sgkturkiye', 'الشباب السوداني تركيا', 'Sudanese Youth Turkey', 'طلاب سودانيون في تركيا', 'SGK'],
-  authors: [{ name: 'مجلس الشباب السوداني' }],
-  creator: 'مجلس الشباب السوداني',
+  authors: [{ name: 'مجلس الشباب السوداني - تركيا' }],
+  creator: 'مجلس الشباب السوداني - تركيا',
   robots: {
     index: true,
     follow: true,
@@ -34,7 +34,7 @@ export const metadata: Metadata = {
     url: SITE_URL,
     type: 'website',
     locale: 'ar_AR',
-    siteName: 'مجلس الشباب السوداني',
+    siteName: 'مجلس الشباب السوداني - تركيا',
     images: [{ url: OG_IMAGE, width: 1200, height: 630, alt: SITE_NAME }],
   },
   twitter: {
