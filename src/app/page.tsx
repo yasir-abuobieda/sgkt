@@ -36,12 +36,11 @@ export default async function Home() {
       {/* Hero Section */}
       <section className="bg-gradient-to-b from-brand-maroon/5 to-white py-24 px-4 border-b border-brand-maroon/10">
         <div className="container mx-auto max-w-5xl text-center">
-          <h1 className="text-4xl md:text-5xl lg:text-7xl font-extrabold text-brand-maroon leading-tight mb-8 drop-shadow-sm notranslate flex flex-col gap-4">
+          <h1 className="text-5xl md:text-6xl lg:text-7xl font-extrabold text-brand-maroon leading-tight mb-4 drop-shadow-sm notranslate flex flex-col gap-4">
             <span>مجلس الشباب السوداني - تركيا</span>
-            <span className="text-2xl md:text-3xl lg:text-4xl font-bold text-brand-maroon/90">Sudan Gençlik Konseyi - Türkiye</span>
           </h1>
           <h2 className="text-2xl md:text-3xl font-bold text-brand-gold mb-8 tracking-wide">
-            Türkiye Sudan Gençlik Konseyi | SGKT
+            Sudan Gençlik Konseyi - Türkiye
           </h2>
           <p className="text-xl md:text-2xl text-slate-600 mb-12 max-w-3xl mx-auto leading-relaxed">
             المظلة الوطنية المستقلة لتمكين الكفاءات الشابة، وبناء جسور الشراكة، وصناعة الحضور الفاعل والمؤثر في تركيا.
