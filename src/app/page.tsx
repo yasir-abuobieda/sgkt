@@ -1,8 +1,9 @@
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 import { JoinUsButton } from '@/components/registration-modal';
+import Image from 'next/image';
+import aboutImg from '@/home/about.jpeg';
 import { EventsCarousel, NewsCarousel } from '@/components/home-carousels';
-import { AboutVideo } from '@/components/about-video';
 import { isEventPast } from '@/lib/utils';
 
 // Revalidate this page instantly to always show fresh data
@@ -79,7 +80,14 @@ export default async function Home() {
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 rotate-180"><path d="m9 18 6-6-6-6"/></svg>
               </Link>
             </div>
-            <AboutVideo />
+            <div className="relative h-[380px] md:h-[420px] rounded-3xl overflow-hidden shadow-2xl border border-slate-100 bg-white">
+              <Image 
+                src={aboutImg} 
+                alt="مجلس الشباب السوداني - تركيا" 
+                className="w-full h-full object-cover"
+                priority 
+              />
+            </div>
           </div>
         </div>
       </section>

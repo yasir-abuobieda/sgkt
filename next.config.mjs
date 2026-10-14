@@ -1,22 +1,41 @@
 import fs from 'fs';
 import path from 'path';
 
-// Ensure video in src/home/about.mp4 is synced to public/about.mp4
+// Ensure about image (about.jpeg / about.jpg) is synced and about.mp4 is cleaned up
 try {
-  const srcVideo = path.join(process.cwd(), 'src', 'home', 'about.mp4');
+  const homeDir = path.join(process.cwd(), 'src', 'home');
   const publicDir = path.join(process.cwd(), 'public');
-  const destVideo = path.join(publicDir, 'about.mp4');
+  if (!fs.existsSync(publicDir)) {
+    fs.mkdirSync(publicDir, { recursive: true });
+  }
 
-  if (fs.existsSync(srcVideo)) {
-    if (!fs.existsSync(publicDir)) {
-      fs.mkdirSync(publicDir, { recursive: true });
+  // Delete about.mp4 to free space and keep repository light
+  const mp4InHome = path.join(homeDir, 'about.mp4');
+  if (fs.existsSync(mp4InHome)) {
+    try { fs.unlinkSync(mp4InHome); } catch {}
+  }
+  const mp4InPublic = path.join(publicDir, 'about.mp4');
+  if (fs.existsSync(mp4InPublic)) {
+    try { fs.unlinkSync(mp4InPublic); } catch {}
+  }
+
+  // Sync about.jpeg and about.jpg
+  const srcJpeg = path.join(homeDir, 'about.jpeg');
+  const srcJpg = path.join(homeDir, 'about.jpg');
+  const imageSource = fs.existsSync(srcJpeg) ? srcJpeg : fs.existsSync(srcJpg) ? srcJpg : null;
+
+  if (imageSource) {
+    if (!fs.existsSync(srcJpg)) {
+      try { fs.copyFileSync(imageSource, srcJpg); } catch {}
     }
-    if (!fs.existsSync(destVideo)) {
-      fs.copyFileSync(srcVideo, destVideo);
+    if (!fs.existsSync(srcJpeg)) {
+      try { fs.copyFileSync(imageSource, srcJpeg); } catch {}
     }
+    try { fs.copyFileSync(imageSource, path.join(publicDir, 'about.jpg')); } catch {}
+    try { fs.copyFileSync(imageSource, path.join(publicDir, 'about.jpeg')); } catch {}
   }
 } catch (e) {
-  console.error('Failed to copy video to public:', e);
+  console.error('Failed to sync about image:', e);
 }
 
 const securityHeaders = [
