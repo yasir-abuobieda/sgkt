@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 import { JoinUsButton } from '@/components/registration-modal';
 import { EventsCarousel, NewsCarousel } from '@/components/home-carousels';
+import { AboutVideo } from '@/components/about-video';
 import { isEventPast } from '@/lib/utils';
 
 // Revalidate this page instantly to always show fresh data
@@ -78,20 +79,7 @@ export default async function Home() {
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 rotate-180"><path d="m9 18 6-6-6-6"/></svg>
               </Link>
             </div>
-            <div className="relative h-[380px] md:h-[420px] rounded-3xl overflow-hidden shadow-2xl bg-black border border-slate-200/60 ring-1 ring-slate-900/5">
-              <video 
-                className="w-full h-full object-cover"
-                controls
-                autoPlay
-                muted
-                playsInline
-                preload="metadata"
-              >
-                <source src="/about.mp4" type="video/mp4" />
-                <source src="/api/about-video" type="video/mp4" />
-                متصفحك لا يدعم تشغيل هذا الفيديو.
-              </video>
-            </div>
+            <AboutVideo />
           </div>
         </div>
       </section>
