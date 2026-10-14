@@ -1,4 +1,23 @@
-/** @type {import('next').NextConfig} */
+import fs from 'fs';
+import path from 'path';
+
+// Ensure video in src/home/about.mp4 is synced to public/about.mp4
+try {
+  const srcVideo = path.join(process.cwd(), 'src', 'home', 'about.mp4');
+  const publicDir = path.join(process.cwd(), 'public');
+  const destVideo = path.join(publicDir, 'about.mp4');
+
+  if (fs.existsSync(srcVideo)) {
+    if (!fs.existsSync(publicDir)) {
+      fs.mkdirSync(publicDir, { recursive: true });
+    }
+    if (!fs.existsSync(destVideo)) {
+      fs.copyFileSync(srcVideo, destVideo);
+    }
+  }
+} catch (e) {
+  console.error('Failed to copy video to public:', e);
+}
 
 const securityHeaders = [
   // Prevent clickjacking (no iframes allowed from other origins)
@@ -26,6 +45,8 @@ const securityHeaders = [
       "font-src 'self' https://*.gstatic.com https://fonts.gstatic.com data:",
       // Images: self + supabase + api.sgkturkiye.org + unsplash + Google Translate + gstatic
       "img-src 'self' data: blob: https://*.supabase.co https://api.sgkturkiye.org https://images.unsplash.com https://*.gstatic.com https://*.google.com https://*.googleapis.com",
+      // Media: videos / audio
+      "media-src 'self' blob: data:",
       // Connections: self + supabase + api.sgkturkiye.org + Google Translate API + dev websockets
       "connect-src 'self' https://*.supabase.co https://api.sgkturkiye.org https://*.google.com https://*.googleapis.com https://*.gstatic.com ws: wss:",
       // Frames (Google Translate uses iframes)
