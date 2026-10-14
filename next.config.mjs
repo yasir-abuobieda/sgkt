@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 
-// Ensure home image (home.jpeg / home.jpg) is synced
+// Ensure home image is synced under all names to prevent any missing file build errors
 try {
   const homeDir = path.join(process.cwd(), 'src', 'home');
   const publicDir = path.join(process.cwd(), 'public');
@@ -9,23 +9,39 @@ try {
     fs.mkdirSync(publicDir, { recursive: true });
   }
 
-  // Find image file (home.jpeg or home.jpg)
-  const srcHomeJpeg = path.join(homeDir, 'home.jpeg');
-  const srcHomeJpg = path.join(homeDir, 'home.jpg');
-  const homeSource = fs.existsSync(srcHomeJpeg) ? srcHomeJpeg : fs.existsSync(srcHomeJpg) ? srcHomeJpg : null;
+  // Find any existing image in src/home
+  const candidates = ['home.jpeg', 'home.jpg', 'about.jpeg', 'about.jpg'];
+  let found = null;
+  for (const c of candidates) {
+    const p = path.join(homeDir, c);
+    if (fs.existsSync(p)) {
+      found = p;
+      break;
+    }
+  }
 
-  if (homeSource) {
-    if (!fs.existsSync(srcHomeJpg)) {
-      try { fs.copyFileSync(homeSource, srcHomeJpg); } catch {}
+  if (found) {
+    for (const c of candidates) {
+      const targetHome = path.join(homeDir, c);
+      if (!fs.existsSync(targetHome)) {
+        try { fs.copyFileSync(found, targetHome); } catch {}
+      }
+      const targetPub = path.join(publicDir, c);
+      try { fs.copyFileSync(found, targetPub); } catch {}
     }
-    if (!fs.existsSync(srcHomeJpeg)) {
-      try { fs.copyFileSync(homeSource, srcHomeJpeg); } catch {}
-    }
-    try { fs.copyFileSync(homeSource, path.join(publicDir, 'home.jpg')); } catch {}
-    try { fs.copyFileSync(homeSource, path.join(publicDir, 'home.jpeg')); } catch {}
+  }
+
+  // Clean up any old video files
+  const mp4Home = path.join(homeDir, 'about.mp4');
+  if (fs.existsSync(mp4Home)) {
+    try { fs.unlinkSync(mp4Home); } catch {}
+  }
+  const mp4Pub = path.join(publicDir, 'about.mp4');
+  if (fs.existsSync(mp4Pub)) {
+    try { fs.unlinkSync(mp4Pub); } catch {}
   }
 } catch (e) {
-  console.error('Failed to sync home image:', e);
+  console.error('Failed to sync images:', e);
 }
 
 const securityHeaders = [
