@@ -1,9 +1,4 @@
 import { NextResponse } from 'next/server';
-import { GoogleGenerativeAI } from '@google/generative-ai';
-
-// Initialize the Google Generative AI client.
-// Make sure to add GEMINI_API_KEY to your .env.local file
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
 
 export async function POST(req: Request) {
   try {
@@ -16,8 +11,9 @@ export async function POST(req: Request) {
       );
     }
 
-    if (!process.env.GEMINI_API_KEY) {
-       return NextResponse.json(
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) {
+      return NextResponse.json(
         { success: false, error: 'مفتاح API الخاص بجوجل (GEMINI_API_KEY) غير موجود في الإعدادات' },
         { status: 500 }
       );
@@ -48,13 +44,34 @@ export async function POST(req: Request) {
       المحتوى: ${content}
     `;
 
-    // Using gemini-1.5-flash as it's fast, cost-effective, and great for translation
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-    
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    const text = response.text();
-    
+    // Direct REST API call without external npm dependency
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: {
+            responseMimeType: 'application/json',
+          },
+        }),
+      }
+    );
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Gemini API Error details:', errorText);
+      throw new Error(`Gemini API failed with status ${response.status}`);
+    }
+
+    const result = await response.json();
+    const text = result?.candidates?.[0]?.content?.parts?.[0]?.text;
+
+    if (!text) {
+      throw new Error('Empty response from Gemini API');
+    }
+
     // Clean up potential markdown formatting from the response (e.g. ```json ... ```)
     const cleanJson = text.replace(/```json/gi, '').replace(/```/g, '').trim();
     
@@ -62,15 +79,15 @@ export async function POST(req: Request) {
     try {
       translatedData = JSON.parse(cleanJson);
     } catch (parseError) {
-      console.error("Failed to parse LLM response as JSON:", cleanJson);
-      throw new Error("Invalid JSON returned from model");
+      console.error('Failed to parse LLM response as JSON:', cleanJson);
+      throw new Error('Invalid JSON returned from model');
     }
 
     // Return the translated data successfully
     return NextResponse.json({ success: true, data: translatedData });
 
   } catch (error) {
-    console.error("Translation API Error:", error);
+    console.error('Translation API Error:', error);
     return NextResponse.json(
       { 
         success: false, 
