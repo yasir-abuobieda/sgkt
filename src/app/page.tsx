@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 import { JoinUsButton } from '@/components/registration-modal';
 import Image from 'next/image';
-import aboutImg from '@/home/about.jpeg';
+import homeImg from '@/home/home.jpeg';
 import { EventsCarousel, NewsCarousel } from '@/components/home-carousels';
 import { isEventPast } from '@/lib/utils';
 
@@ -82,7 +82,7 @@ export default async function Home() {
             </div>
             <div className="relative h-[380px] md:h-[420px] rounded-3xl overflow-hidden shadow-2xl border border-slate-100 bg-white">
               <Image 
-                src={aboutImg} 
+                src={homeImg} 
                 alt="مجلس الشباب السوداني - تركيا" 
                 className="w-full h-full object-cover"
                 priority 
